@@ -1,0 +1,52 @@
+@import '~@/themes/vars.less';
+
+.rowRight {
+  position: relative;
+  cursor: pointer;
+}
+
+.rowRightCard {
+  padding: 0;
+}
+
+.rowRightCard :global(.ant-popover-arrow) {
+  display: none;
+}
+
+.rowRightCard :global(.ant-popover-inner-content) {
+  // padding:2px 10px;
+  padding: 0;
+}
+
+.rowRightList {
+  padding: 5px 10px;
+  cursor: pointer;
+  -moz-user-select: none;
+
+  /* 火狐 */
+  -webkit-user-select: none;
+
+  /* webkit浏览器 */
+  -ms-user-select: none;
+
+  /* IE10 */
+  -khtml-user-select: none;
+
+  /* 早期浏览器 */
+  user-select: none;
+}
+
+.rowRightList:hover {
+  // color: #1890ff;
+}
+
+.icon:hover {
+  // color: black;
+  // background-color: #f2f2f252;
+  // color: #1890ff;
+  // font-size: 16px;
+}
+
+.displayNone {
+  display: none !important;
+}

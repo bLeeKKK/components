@@ -1,0 +1,33 @@
+.bar-box {
+  display: flex;
+  border-bottom: 1px solid rgba(138, 138, 138, .2);
+  margin-bottom: 8px;
+  position: relative;
+
+  .bar-item {
+    padding: 8px 16px;
+    color: #424242;
+    transition: color .3s cubic-bezier(.645, .045, .355, 1);
+    
+    &:hover {
+      color: #1976d2;
+    }
+    &.active {
+      color: #1791ff;
+      // border-bottom: 2px solid #1791ff;
+    }
+  }
+
+  .ink-bar {
+    position: absolute;
+    bottom: 1px;
+    left: 0;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 0;
+    height: 2px;
+    background-color: #1890ff;
+    transform-origin: 0 0;
+    transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), width 0.2s cubic-bezier(0.645, 0.045, 0.355, 1), left 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  }
+}

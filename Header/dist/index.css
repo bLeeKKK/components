@@ -1,0 +1,15 @@
+.wrapper {
+  position: relative;
+  box-sizing: border-box;
+  padding: 8px;
+}
+.flexBetweenStart {
+  display: flex;
+  justify-content: space-between;
+}
+.header-left {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+}
