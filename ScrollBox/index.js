@@ -1,6 +1,7 @@
 import React, { useEffect, forwardRef, useState, useRef, useImperativeHandle } from 'react';
 import { Link, Element, Events } from 'react-scroll';
 import styles from './styles.less';
+import { useClientHeight } from '../utils/index'
 
 /** 
  * @description: 滚动条组件
@@ -34,6 +35,8 @@ const ScrollBox = forwardRef(
     const [scrollLeft, setScrollLeft] = useState(0);
     const [widthInk, setWidthInk] = useState(0);
     const barRef = useRef();
+    const warrperRef = useRef();
+    const clientHeight = useClientHeight(warrperRef.current);
 
     useImperativeHandle(ref, () => ({}));
 
@@ -51,29 +54,32 @@ const ScrollBox = forwardRef(
 
     return <>
       <div style={warrperStyle}>
-        <div className={styles['bar-box']} ref={barRef}>
-          {
-            children
-              .map((item) => {
-                return <Link
-                  key={item.props.id}
-                  className={`${styles['bar-item']} ${activeKey === item.props.id ? styles['active'] : ''}`}
-                  containerId={id}
-                  to={item.props.id}
-                  smooth={true}
-                  spy={true}
-                  duration={500}
-                  onSetActive={(key) => setActiveKey(key)}
-                  onClick={() => { setActiveKey(item.props.id) }}
-                >
-                  {item.props.title}
-                </Link>
-              })
-          }
-          <div className={styles['ink-bar']} style={{ width: `${widthInk}px`, transform: `translate3d(${scrollLeft}px, 0px, 0px)` }}></div>
+        {/* 这里  style={{ overflow: 'hidden' }} 解决BAF问题 */}
+        <div ref={warrperRef} style={{ overflow: 'hidden' }}> 
+          <div className={styles['bar-box']} ref={barRef}>
+            {
+              children
+                .map((item) => {
+                  return <Link
+                    key={item.props.id}
+                    className={`${styles['bar-item']} ${activeKey === item.props.id ? styles['active'] : ''}`}
+                    containerId={id}
+                    to={item.props.id}
+                    smooth={true}
+                    spy={true}
+                    duration={500}
+                    onSetActive={(key) => setActiveKey(key)}
+                    onClick={() => { setActiveKey(item.props.id) }}
+                  >
+                    {item.props.title}
+                  </Link>
+                })
+            }
+            <div className={styles['ink-bar']} style={{ width: `${widthInk}px`, transform: `translate3d(${scrollLeft}px, 0px, 0px)` }}></div>
+          </div>
         </div>
 
-        <Element id={id} style={{ overflow: 'auto', height: 'calc(100% - 46px)', width: '100%' }}>
+        <Element id={id} style={{ overflow: 'auto', height: `calc(100% - ${clientHeight}px)`, width: '100%' }}>
           {
             children
               .map((item) => <Element name={item.props.id} key={item.props.id}>

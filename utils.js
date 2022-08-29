@@ -1,3 +1,4 @@
+import { useLayoutEffect, useState } from 'react'
 import moment from 'moment';
 
 /**
@@ -102,11 +103,12 @@ export const searchDataPackaged = ({
         }
       }
       return;
-    } else if (type === 'place') {
-      if (!usePlace) {
-        return;
-      }
     }
+    // else if (type === 'place') {
+    //   if (!usePlace) {
+    //     return;
+    //   }
+    // }
 
     arrFilter.push({
       fieldName,
@@ -116,4 +118,26 @@ export const searchDataPackaged = ({
     });
   });
   return arrFilter.filter(item => !!item.value || item.value === false || item.value === 0);
+};
+
+
+/**
+ * @description: 自定义hooks，获取元素的高度
+ * @param {dom} ref 接收一个dom元素，实时计算它的高度
+ * 
+ * @return {number} 返回元素高度
+ * */
+export const useClientHeight = (ref = {}) => {
+
+  const [clientHeight, setClientHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    if (ref && ref.clientHeight) {
+      setClientHeight(ref.clientHeight);
+    } else {
+      setClientHeight(0)
+    }
+  }, [ref, ref.clientHeight]);
+
+  return clientHeight;
 };

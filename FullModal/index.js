@@ -1,39 +1,63 @@
-import React from 'react';
-import { Modal } from 'antd';
+import React, { useState, useLayoutEffect } from 'react';
+import { Modal, Button } from 'antd';
+import styles from './index.less';
+import { useClientHeight } from '../utils/index';
 
 /**
  * 全屏模态框
+ * @param {Function} onCancel 自定义取消按钮的回调事件
+ * @param {Function} onOk 自定义取消按钮的回调事件
+ * @param {Object} okButtonProps 保存按钮属性
+ * @param {Object} cancelButtonProps 取消按钮属性
+ * @param {ReactDOM} title 禁止使用Modal 的 title
+ * @param {ReactDOM} titleStr 标题
+ * @param {ReactDOM} titleDescribe 标题下描述
  * @param {ReactDOM} children
  * @param {Object} props 收集：自定义弹窗属性
  * @return {ReactDOM}
  * 
  * @example:
- * <FullModal
-    visible={visible}
-    maskClosable={false}
-    okButtonProps={{ loading }}
-    onCancel={onCancel}
-    onOk={onOk}
- * >
- *  <div>
- *    Some content
- *  </div>
- * </FullModal>
 */
 const FullModal = ({
   children,
+  onCancel,
+  onOk,
+  okButtonProps = {},
+  cancelButtonProps = {},
+  title,
+  titleStr,
+  titleDescribe,
   ...props
 }) => {
+
+
+  const [titleRef, setTitleRef] = useState();
+  const clientHeight = useClientHeight(titleRef.current);
 
   return (
     <>
       <Modal
         width={'100%'}
+        closable={false}
+        footer={null}
         style={{ top: 0, padding: 0, position: 'relative' }}
-        bodyStyle={{ height: 'calc(100vh - 53px)', boxSizing: 'border-box', padding: '0px', overflow: 'auto' }}
+        bodyStyle={{ height: `100vh`, boxSizing: 'border-box', padding: '0px', overflow: 'auto' }}
         {...props}
       >
-        {children}
+        <div className={styles['title-box']} ref={ref => setTitleRef(ref)}>
+          <div>
+            <div className={styles['title-str']}>{titleStr}</div>
+            <div className={styles['title-describe']}>{titleDescribe}</div>
+          </div>
+          <div>
+            <Button style={{ marginRight: "8px" }} onClick={onCancel} {...cancelButtonProps}>关闭</Button>
+            <Button type='primary' onClick={onOk} {...okButtonProps}>保存</Button>
+          </div>
+        </div>
+        <div style={{ height: `${clientHeight}px` }}></div>
+        <div style={{ height: `calc(100% - ${clientHeight}px)` }}>
+          {children}
+        </div>
       </Modal>
     </>
   );
