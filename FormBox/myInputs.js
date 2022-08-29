@@ -133,6 +133,7 @@ export const MyTreeSelect = forwardRef((
   return <TreeSelect
     ref={ref}
     searchPlaceholder="快速搜索"
+    treeNodeFilterProp="title" // 搜索使用 title 字段
     {...props}
   >
     {renderOptions(nOptions, renderTree, reader, childrenStr)}
@@ -150,7 +151,7 @@ function renderOptions(options, renderTree, reader, children = 'children') {
         value={res[reader.value]}
         title={title}
         key={res[reader.value]}
-        children={renderOptions(res[children])}
+        children={renderOptions(res[children], renderTree, reader, children)}
       />
     })
   }

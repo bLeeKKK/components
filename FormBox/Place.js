@@ -45,7 +45,7 @@ const Place = forwardRef(
           setInputShow(props?.value)
         }
       }
-    }, [props?.value])
+    }, [props.value])
 
     function setOptions(v) {
       optionsArr = v;
