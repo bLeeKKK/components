@@ -17,6 +17,7 @@ import {
   MySelect,
   MyTreeSelect,
 } from './myInputs';
+import Place from './Place'
 
 const { RangePicker, MonthPicker } = DatePicker;
 const { TextArea, Search } = Input;
@@ -53,7 +54,7 @@ export const Combos = {
   // tableCheck: MixinTable, // (props) => <MixinTable mode="checkbox" {...props} />, // 表格选择
   // // table: MixinTable,
   // rangePickerMonth: RangePickerMonth,
-  // // place: Place, // 地址选择
+  place: Place, // 地址选择
 };
 
 // 获取多层对象的值
@@ -86,6 +87,7 @@ const FormBox = forwardRef(
       noBottomMargin = false,
       rowProps = {},
       showObj = {},
+      justShow = false,
       formLayout = {
         labelCol: { span: 8 },
         wrapperCol: { span: 16 },
@@ -96,14 +98,14 @@ const FormBox = forwardRef(
     const { getFieldDecorator } = form;
     useImperativeHandle(ref, () => ({ form }));
     const renderFormItem = function (item) {
-      if (item.type === 'show') {
+      if (item.type === 'show' || justShow) {
         // 显示
         let str = showObj && getValue(showObj, item.key);
         if (str === undefined || str === null || str === '') {
           str = '-';
         }
         if (item.render) {
-          str = item.render(str, showObj);
+          str = item.render(str, showObj, form);
         }
         return (
           <div
@@ -121,16 +123,18 @@ const FormBox = forwardRef(
         );
       }
       const Item = Combos[item.type] || Input;
+      const { initialValue, ...otherProps } = item?.props || {}
       if (item.type === 'span') {
         return getFieldDecorator(`${item.key}_${item.type}`, {
-          initialValue: item.props.initialValue,
-        })(<span>{item.initialValue}</span>);
+          initialValue,
+        })(<span>{initialValue}</span>);
       }
+
       if (item.type) {
         // 如果存在组件类型type，则直接返回
         return getFieldDecorator(`${item.key}_${item.type}`, {
           rules: item.rules || [],
-          initialValue: item.props.initialValue,
+          initialValue,
           ...(item.configItem || {}),
         })(
           <Item
@@ -147,7 +151,7 @@ const FormBox = forwardRef(
       // 不存在type类型返回，普通的input框
       return getFieldDecorator(`${item.key}`, {
         rules: item.rules || [],
-        initialValue: item.props?.initialValue,
+        initialValue,
         ...(item.configItem || {}),
       })(
         <Input
@@ -155,7 +159,7 @@ const FormBox = forwardRef(
           style={{ width: '100%', ...(item.style || {}) }}
           name={`${item.key}_${item.type}`}
           // field={[item.key]}
-          {...item.props}
+          {...otherProps}
         />,
       );
     };
@@ -226,7 +230,8 @@ const FormBox = forwardRef(
   },
 );
 
-export const packageData = ({ vals, types = {}, dateType = 'YYYY-MM-DD HH:mm:ss' }) => {
+const timerFormat = 'YYYY-MM-DD HH:mm:ss'
+export const packageData = ({ vals, types = {}, dateType }) => {
   const keys = Object.keys(vals);
   const objSend = {};
   keys.forEach(item => {
@@ -237,7 +242,7 @@ export const packageData = ({ vals, types = {}, dateType = 'YYYY-MM-DD HH:mm:ss'
       vals[item] = String(vals[item]);
     }
     if (type === 'datePicker' && vals[item]) {
-      vals[item] = momentFn(vals[item]).format(dateType);
+      vals[item] = momentFn(vals[item]).format(dateType?.[fieldName] || timerFormat);
     } else if (type === 'tableRadio' && vals[item]) {
       // console.log(vals[item])
       vals[item] = vals[item] && vals[item][0];
@@ -255,7 +260,7 @@ export const packageData = ({ vals, types = {}, dateType = 'YYYY-MM-DD HH:mm:ss'
   return objSend;
 };
 
-export const packageDataIn = ({ items = [], show = {}, transformMultipleSelect = {} }) => {
+export const packageDataIn = ({ items = [], show = {} }) => {
   let obj = {};
   items.forEach(res => {
     if (show[res.key] !== undefined && show[res.key] !== null) {

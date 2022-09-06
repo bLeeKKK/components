@@ -49,9 +49,13 @@ const Export = forwardRef(({
             setLoading(true);
             onOkExport()
               .then(res => {
-                const { success, data, message: msg } = res
+                const { success, data, message: msg, headers } = res
                 if (success) {
-                  downloadBlobFile(data, `${exportName || '文件' + moment().format("YYYYMMDDHHmmss")}.xlsx`)
+                  downloadBlobFile(
+                    data,
+                    decodeURI(headers['content-disposition'].split("''")[1])
+                    || `${exportName || '文件' + moment().format("YYYYMMDDHHmmss")}.xlsx`
+                  )
                 } else {
                   message.error(msg)
                 }

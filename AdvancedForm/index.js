@@ -79,6 +79,11 @@ const AdvancedForm = forwardRef(
             onClose={hide}
             visible={visible}
             bodyStyle={{ paddingBottom: 80 }}
+            onKeyUp={(e) => {
+              if (e.keyCode === 13) {
+                handleSubmit()
+              }
+            }}
           >
             <div>
               <FormBox

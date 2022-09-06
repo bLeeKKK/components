@@ -1,249 +1,179 @@
-import React, { useState, useRef } from 'react';
-import { Button, message, Modal, Tag, Tooltip, Dropdown, Menu, Icon } from 'antd';
-import { downloadBlobFile } from '../Export';
+import React, { useState } from 'react';
 import PerBtn from '@/components/PerBtn';
-import { ExtTable } from 'suid';
+import { Button, Modal, Input, message, Select, Result, Divider, Tag } from 'antd';
+import styles from './index.less';
+import { downloadBlobFile } from '../utils';
+import { ExtTable } from '@sei/suid'
 
-const checkMap = (res) => ({
-  flag: !res.exceptionMessage,
-  message: !res.exceptionMessage ? "无" : <Tooltip
-    placement="top"
-    title={<>
-      {res.exceptionMessage}
-    </>}>
-    {res.exceptionMessage}
-  </Tooltip>,
-  ...res,
-})
+const { Option } = Select;
 
-function Import({
-  btnProps = {},
-  // btnDownProps = {},
-  // downloadTemplate = () => Promise.reject(),
-  textImport = '批量导入',
-  downloadProps = {},
+/**
+ * @param {string} pKey 权限控制key
+*/
+export default function Import({
   pKey,
-  columns = [],
-  checkListData = () => Promise.reject(),
-  batchSave = () => Promise.reject(),
-  callBcak = () => { },
-  mapCheck = checkMap,
-  maxSize = 10, // 最大上传 10mb 的文件
-  inputProps = {},
-  flagItem = {
-    title: '校验状态',
-    dataIndex: 'flag',
-    render: (t) => t ? <Tag color="green">成功</Tag> : <Tag color="magenta">失败</Tag>
-  }
-}) {
-  const [loadingDataImport, setLoadingDataImport] = useState(false);
-  const [fileVisible, setFileVisible] = useState(false);
-  const [listData, setListData] = useState([]);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const flieInput = useRef()
-
-  function handleSelectedRows(rowKeys, rows) {
-    setSelectedRowKeys(rowKeys);
-    // setSelectedRow(rows);
-  }
-
-  function checkFile(data) {
-    const fd = new FormData();
-    const file = data.target.files[0]
-
-    if (maxSize <= file.size / 1024 / 1024) {
-      message.warn(`最大上传文件大小为：${maxSize}MB以内`)
-      return
-    }
-
-    fd.append('file', file);
-    setLoadingDataImport(true);
-    if (flieInput.current) {
-      flieInput.current.value = ''
-    }
-    checkListData(fd)
-      .then((res) => {
-        if (res.success) {
-          const newData = (res.data || []).map(mapCheck)
-          if (newData?.length === 0) {
-            message.warning('校验后数据为空，请重新上传');
-          }
-          setListData(newData)
-        } else {
-          setListData([])
-          message.error(res.message)
-        }
-      })
-      .finally(() => {
-        setLoadingDataImport(false)
-      })
-  }
-
-  function saveImportExcel() {
-
-    Modal.confirm({
-      okText: '确认',
-      cancelText: '取消',
-      title: '确定导入',
-      content: '将导入所有校验【成功】的数据！',
-      onOk() {
-        const data = listData.filter(re => re.flag);
-        setLoadingDataImport(true);
-        batchSave(data)
-          .then(({ message: msg, success }) => {
-            if (success) {
-              message.success(msg);
-              callBcak()
-              setFileVisible(false)
-              setListData([])
-            } else {
-              message.error(msg)
-            }
-          })
-          .finally(() => {
-            setLoadingDataImport(false)
-          })
-      },
-      onCancel() { },
-    });
-  }
-
-  return (
-    <>
-      <DownLoadBtn {...downloadProps} />
-      <PerBtn
-        onClick={() => { setFileVisible(true) }}
-        pKey={pKey}
-        {...btnProps}
-      >{textImport}</PerBtn>
-      <Modal
-        title={`导入`}
-        visible={fileVisible}
-        okText={"确定"}
-        cancelText={"取消"}
-        onCancel={() => {
-          setFileVisible(false);
-          setListData([]);
-        }}
-        width={"90%"}
-        maskClosable={false}
-        forceRender={true}
-        footer={[
-          <Button
-            type="primary"
-            key="import"
-            onClick={() => saveImportExcel()}
-            loading={loadingDataImport}
-            disabled={listData.some(res => !res.flag) || listData.length === 0}
-          >导入</Button>
-        ]}
-      >
-        <div style={{ display: "flex", margin: "0 0 10px 0" }} >
-          <Button type="primary" loading={loadingDataImport} style={{ position: 'relative' }}>
-            选择文件
-            <input
-              ref={flieInput}
-              type="file"
-              style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
-                opacity: '0'
-              }}
-              onChange={checkFile}
-              accept="excel/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-              {...inputProps}
-            />
-          </Button>
-        </div>
-        {fileVisible && <ExtTable
-          bordered={true}
-          columns={
-            [
-              flagItem,
-              { title: '校验信息', dataIndex: 'message', width: 200 },
-              ...columns,
-            ].map(_ => ({ ..._, align: 'center' }))
-          }
-          showSearch={false}
-          height={500}
-          rowKey={(item, index) => item.id || "错误数据" + index}
-          allowCancelSelect
-          size='small'
-          selectedRowKeys={selectedRowKeys}
-          onSelectRow={handleSelectedRows}
-          remotePaging={true}
-          storageId={'GIFTACCOUNT_IMPORT'}
-          ellipsis={false}
-          // checkbox={{ multiSelect: true }}
-          dataSource={listData}
-        />}
-      </Modal>
-    </>
-  )
-}
-
-const DownLoadBtn = function ({
-  btn,
-  pKey,
+  downloadTemplate,
+  importData,
+  repeatStr,
+  templateName = "name",
+  showColumns = []
 }) {
 
+  const [file, setFile] = useState();
+  const [visible, setVisible] = useState(false); // 上传弹窗
+  const [visibleShow, setVisibleShow] = useState(false); // 展示弹窗
+  const [showData, setShowData] = useState(); // 展示用数据
   const [loading, setLoading] = useState(false);
-  const flag = Array.isArray(btn)
+  const [type, setType] = useState('overwrite');
 
-  if (!btn) {
-    return "模板下载必传属性“btn”"
+  function opOpen() {
+    setVisible(true);
   }
 
-  return flag ? <Dropdown
-    overlay={
-      <Menu>
-        {
-          btn.map((re, index) => <Menu.Item
-            key={`${index}-${re.name}`}
-            onClick={() => downloadImport(re.downloadImport, re.name)}
-          >
-            {re.name}
-          </Menu.Item>)
-        }
-      </Menu>
-    }
-    placement="bottomCenter"
-  >
-    <PerBtn
-      loading={loading}
-      pKey={pKey}
-    >导入模板<Icon type="down" /></PerBtn>
-  </Dropdown> : <PerBtn
-    onClick={
-      () => downloadImport(btn.downloadImport, btn.name)
-    }
-    loading={loading}
-    pKey={pKey}
-    {...btn}
-  >
-    {btn.name || "下载导入模板"}
-  </PerBtn>
+  function selectFile(e) {
+    setFile(e.target.files[0])
+  }
 
-  function downloadImport(fn, name) {
-    if (!fn) {
-      return Promise.reject('下载地址不存在')
-    }
-    setLoading(true);
-    fn()
+  function dt() {
+    setLoading(true)
+    downloadTemplate()
       .then((res) => {
-        const { success, data, message: msg } = res;
+        const { success, data, message: msg, headers } = res;
         if (success) {
-          downloadBlobFile(data, `${name}.xlsx`);
+          downloadBlobFile(data, decodeURI(headers['content-disposition'].split("''")[1]));
         } else {
           message.error(msg);
         }
       })
       .finally(() => setLoading(false))
   }
+
+  function onOk() {
+    importData({ type, file, })
+      .then(({ success, message: msg, data }) => {
+        if (success) {
+          message.success(msg);
+          onCancel();
+          setVisibleShow(true);
+          setShowData(data)
+        } else {
+          message.error(msg);
+        }
+      })
+  }
+
+  function onCancel() {
+    setVisible(false);
+    setFile(undefined)
+  }
+
+  function onCancelShow() {
+    setVisibleShow(false);
+    setShowData(undefined);
+  }
+
+  const describe = <span>
+    导入总数数据{showData?.count}条，覆盖{showData?.overwriteCount}条，跳过{showData?.skipCount}条，导入成功{showData?.successCount}条，导入失败<span style={{ color: "red" }}>{showData?.failCount}</span>条（成功数包含了覆盖数）
+  </span>
+
+
+  return (
+    <>
+      <PerBtn pKey={pKey} onClick={opOpen}>导入</PerBtn>
+      <Modal
+        title={`线索导入`}
+        visible={visible}
+        okText={"导入"}
+        okButtonProps={{ loading }}
+        cancelText={"取消"}
+        onCancel={onCancel}
+        width={"800px"}
+        onOk={onOk}
+        maskClosable={false}
+        bodyStyle={{ padding: "24px 24px 24px 40px" }}
+      >
+        <div className={styles['upload-box']}>
+          <h3>
+            一、请按照数据模板的格式准备要导入的数据。
+            <span type='link' onClick={dt} style={{ color: "#47acff", cursor: "pointer", "pointerEvents": loading ? "none" : "auto" }}>
+              点击下载《{templateName}》
+            </span>
+          </h3>
+          <p>导入文件请勿超过2MB（约10,000条数据）</p>
+          <h3>二、请选择数据重复时的处理方式（查重规则：【{repeatStr}】）</h3>
+          <p>查重规则为：添加客户时所需填写的所有唯一字段，当前设置唯一字段为：{repeatStr}</p>
+          <Select
+            style={{ width: "400px", marginBottom: "8px" }}
+            onChange={(val) => setType(val)}
+            allowClear={false}
+            value={type}
+          >
+            <Option value="overwrite">覆盖原有系统数据</Option>
+            <Option value="skip">跳过</Option>
+          </Select>
+          <h3>三、请选择需要导入的文件</h3>
+          <div style={{ display: "flex" }}>
+            <Input readOnly value={file?.name} style={{ width: "400px" }} />
+            <Button style={{ position: "relative", marginLeft: "8px" }} type="primary" >
+              上传文件
+              <input
+                type={'file'}
+                style={{ left: 0, top: 0, width: "100%", height: "100%", position: "absolute", opacity: 0 }}
+                onChange={selectFile}
+                value={''}
+              />
+            </Button>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        title={`导入信息`}
+        visible={visibleShow}
+        footer={null}
+        width={"80%"}
+        onCancel={onCancelShow}
+        maskClosable={false}
+      >
+        {
+          showData?.rows.length
+            ? <>
+              {describe}
+              <Divider dashed />
+              <ExtTable
+                columns={[
+                  {
+                    title: '校验状态',
+                    dataIndex: 'id',
+                    render: (t) => t ? <Tag color="green">成功</Tag> : <Tag color="magenta">失败</Tag>
+                  },
+                  { title: '错误信息', dataIndex: 'errorMessage', width: 300 },
+                  ...showColumns,
+                ]}
+                showSearch={false}
+                rowKey={(item, index) => `${item.errorMessage}-${index}`}
+                dataSource={showData.rows}
+                height="600px"
+              />
+            </>
+            : <Result
+              status="success"
+              title="数据导入完成！"
+              subTitle={describe}
+              extra={[
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    opOpen()
+                    onCancelShow()
+                  }}
+                >
+                  继续导入
+                </Button>,
+                <Button onClick={onCancelShow}>关闭</Button>,
+              ]}
+            />
+        }
+      </Modal>
+    </>
+  )
 }
-
-
-export default Import
