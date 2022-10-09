@@ -1,12 +1,13 @@
-import React, { forwardRef, useState, useEffect } from 'react';
-import { Select, TreeSelect } from 'antd';
+import React, { forwardRef, useState, useEffect, useRef, useImperativeHandle } from 'react';
+import { Select, TreeSelect, Pagination, Input } from 'antd';
 import { request } from '@/utils';
-import { comparisonObject } from '../utils'
+import { comparisonObject } from '../utils';
+import ReactDom from 'react-dom';
 
 const { Option } = Select;
 const { TreeNode } = TreeSelect;
+const { Search } = Input;
 
-let timer = null;
 export const MySelect = forwardRef(
   (
     {
@@ -23,6 +24,8 @@ export const MySelect = forwardRef(
       otherLine = [],
       dataTypeFun = v => v, // 保证返回的数据类型 就行装换
       cascadeParams = {},
+      pageInfo,
+      searchProperties,
       ...props
     },
     ref,
@@ -32,20 +35,33 @@ export const MySelect = forwardRef(
     const [reqOptions, setReqOptions] = useState([]);
     const [params, setParams] = useState(cascadeParams);
     const [v, setV] = useState(undefined);
+    const [total, setTotal] = useState(0);
+    const [current, setCurrent] = useState(1);
+    const [open, setOpen] = useState(false);
+    const [searchVal, setSearchVal] = useState('');
+    const pageInfoObj = typeof pageInfo === "object" ? { rows: 30, ...pageInfo } : { rows: 30 }
+    const selectRef = useRef();
+    const pageRef = useRef();
+    const searchRef = useRef();
+
+    useImperativeHandle(ref, () => ({ selectRef }));
+
+    useEffect(() => {
+      document.addEventListener('mousedown', hide, true);
+      return () => document.removeEventListener('mousedown', hide, true);
+    }, [])
 
     useEffect(() => {
       setV(value);
     }, [value]);
 
     useEffect(() => {
-      if (!store) {
-        return
-      }
+      if (!store) return
       if (cascadeParams === params) {
         // 第一次进入数据一样
         getData(cascadeParams)
       }
-      
+
       // 深度比较对象
       const flag = comparisonObject(cascadeParams, params);
       if (!flag) {
@@ -55,21 +71,36 @@ export const MySelect = forwardRef(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cascadeParams])
 
-    function onSearch() {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(getData, 1000);
-    }
+    useEffect(() => {
+      getData()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [current, searchVal])
 
-    function getData(params = {}) {
+    function getData(params = cascadeParams) {
+      if (!store) return
+      let searchObj = {}
+      if (searchProperties) searchObj = { quickSearchProperties: searchProperties, quickSearchValue: searchVal, }
+      setLoading(true);
       request({
         ...store,
         ...params,
+
+        // data数据
+        data: {
+          // 其他参数
+          ...(params?.data || {}), ...(store?.data || {}),
+          // 分页参数
+          pageInfo: pageInfo ? { ...pageInfoObj, page: current, } : undefined,
+          ...searchObj,
+        }
       })
         .then(({ data }) => {
           let optitons = []
           if (Array.isArray(data)) {
             optitons = data
           } else if (Array.isArray(data?.rows)) {
+            setCurrent(data.page);
+            setTotal(data.records);
             optitons = data?.rows
           }
           setReqOptions(optitons.map(res => {
@@ -79,11 +110,34 @@ export const MySelect = forwardRef(
               data: res,
             };
           }));
-          setLoading(false);
         })
-        .finally(() => {
-          setLoading(false);
-        });
+        .finally(() => setLoading(false));
+    }
+
+    function onChangePage(page) {
+      setCurrent(page)
+    }
+
+    function hide(e) {
+      const tDom = ReactDom.findDOMNode(selectRef.current)
+      const pDom = ReactDom.findDOMNode(pageRef.current)
+      const sDom = ReactDom.findDOMNode(searchRef.current)
+
+      if (tDom?.contains(e.target) || pDom?.contains(e.target) || sDom?.contains(e.target)) {
+        // 暂无需求
+      } else {
+        setTimeout(() => {
+          setOpen(false)
+        }, 50)
+      }
+    }
+
+    function show(val) {
+      if (val) {
+        setOpen(val);
+        // 重置搜索框
+        // setSearchVal('');
+      }
     }
 
     const option = (item, k) => {
@@ -93,6 +147,7 @@ export const MySelect = forwardRef(
             data={item.data}
             key={`${k}-${item.value}`}
             value={dataTypeFun(item.value)}
+            label={item.label}
           >
             {optionRender(item)}
           </Option>
@@ -103,6 +158,7 @@ export const MySelect = forwardRef(
           data={item.data}
           key={`${k}-${item.value}`}
           value={dataTypeFun(item.value)}
+          label={item.label}
         >
           {item.label}
         </Option>
@@ -113,21 +169,53 @@ export const MySelect = forwardRef(
 
     return (
       <Select
+        open={open}
+        onDropdownVisibleChange={show}
         loading={lodaing}
         remotePaging={true}
         style={style}
-        onSearch={onSearch}
+        showSearch={true}
+        optionFilterProp={'label'}
         {...props}
         onChange={(val, datas) => {
           const data = datas && datas.props && datas.props.data;
           onChange(val, data);
           setV(val);
         }}
-        ref={ref}
+        // onKeyDown={keyDown}
+        // onSelect={() => setOpen(false)}
+        // onMouseDown={e => e.preventDefault()}
+        ref={selectRef}
         value={v}
         dropdownRender={menu => (
           <div>
+            {
+              searchProperties
+              && store
+              && <div
+                style={{ padding: "8px 8px 0 8px", display: "flex", justifyContent: "center", alignItems: "center", borderTop: "1px solid rgb(222, 222, 222)" }}
+                ref={searchRef}
+              >
+                <Search onSearch={(v) => setSearchVal(v)} />
+              </div>
+            }
             {menu}
+            {
+              pageInfo
+              && <div
+                style={{ height: "42px", display: "flex", justifyContent: "center", alignItems: "center", borderTop: "1px solid rgb(222, 222, 222)" }}
+                ref={pageRef}
+              >
+                <Pagination
+                  simple
+                  disabled={lodaing}
+                  current={current}
+                  total={total}
+                  pageSize={pageInfoObj.rows}
+                  onChange={onChangePage}
+                />
+              </div>
+            }
           </div>
         )}
       >

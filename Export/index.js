@@ -44,7 +44,9 @@ const Export = forwardRef(({
           okText: "确定",
           cancelText: "取消",
           title: '确定导出数据？',
-          content: `导出${exportName || "文件"}`,
+          content: <>
+            确定根据<b>现有条件</b>，导出{`${exportName || "文件"}`}
+          </>,
           onOk() {
             setLoading(true);
             onOkExport()

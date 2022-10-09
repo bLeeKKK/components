@@ -1,7 +1,7 @@
-import React from 'react'
-import { message, Tooltip } from 'antd'
-import copy from 'copy-to-clipboard'
-import { ExtIcon } from 'suid'
+import React from 'react';
+import { message, Tooltip } from 'antd';
+import copy from 'copy-to-clipboard';
+import { ExtIcon } from '@sei/suid';
 
 function copyText(text) {
   if (copy(text)) {
@@ -13,7 +13,7 @@ function copyText(text) {
 
 function CopyTip({
   text,
-  children
+  // children
 }) {
 
   return <>
@@ -29,8 +29,8 @@ function CopyTip({
         style={{ color: 'rgb(28,129,230)' }}
       />
     }
-    <Tooltip placement="top" title={text}>
-      {children}
+    &nbsp;<Tooltip placement="top" title={text}>
+      {text}
     </Tooltip>
   </>
 }

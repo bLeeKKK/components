@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Button, Drawer } from 'antd';
 import { ExtIcon } from '@sei/suid';
 import FormBox from '../FormBox';
@@ -29,6 +29,23 @@ const AdvancedForm = forwardRef(
     let refFormOut = null;
     const [visible, triggerVisible] = useState(false);
     const hide = () => triggerVisible(false);
+    const haveFormItem = !!formItems.length;
+
+    useEffect(() => {
+      document.addEventListener('keydown', tabOpenSearch)
+      return () => document.removeEventListener('keydown', tabOpenSearch)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+      if (visible) {
+        document.addEventListener('keydown', handleSearch, true)
+      } else {
+        document.removeEventListener('keydown', handleSearch, true)
+      }
+      return () => document.removeEventListener('keydown', handleSearch, true)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [visible])
 
     useImperativeHandle(ref, () => {
       return {
@@ -40,13 +57,30 @@ const AdvancedForm = forwardRef(
       };
     });
 
+    function tabOpenSearch(e) {
+      // Tab 打开搜索
+      if (e.keyCode === 70 && e.ctrlKey && haveFormItem) {
+        triggerVisible(visible => !visible)
+        e.stopPropagation()
+      }
+    }
+
+    function handleSearch(e) {
+      // 回车搜索
+      if (e.keyCode === 13) {
+        handleSubmit()
+        e.stopImmediatePropagation()
+      }
+    }
+
+    // 调用触发搜索回掉
     function handleSubmit(...vals) {
-      hide();
       const Form = refForm?.form;
       const Formout = refFormOut?.form;
       const outVal = Formout?.getFieldsValue();
-      if (outVal.value_search) outVal.value_search = outVal.value_search.trim();
+      if (outVal?.value_search) outVal.value_search = outVal.value_search.trim();
       onOk(Form?.getFieldsValue(), outVal, ...vals);
+      hide();
     }
 
     function handleReset() {
@@ -79,11 +113,11 @@ const AdvancedForm = forwardRef(
             onClose={hide}
             visible={visible}
             bodyStyle={{ paddingBottom: 80 }}
-            onKeyUp={(e) => {
-              if (e.keyCode === 13) {
-                handleSubmit()
-              }
-            }}
+          // onKeyUp={(e) => {
+          //   if (e.keyCode === 13) {
+          //     handleSubmit()
+          //   }
+          // }}
           >
             <div>
               <FormBox
@@ -123,7 +157,7 @@ const AdvancedForm = forwardRef(
           ) : (
             ''
           )}
-          {formItems.length ? (
+          {haveFormItem ? (
             <Button onClick={() => triggerVisible(!visible)} {...advBtnProps}>
               {/* <Icon type="filter" /> */}
               <ExtIcon

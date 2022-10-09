@@ -17,7 +17,8 @@ import {
   MySelect,
   MyTreeSelect,
 } from './myInputs';
-import Place from './Place'
+import Place from './Place';
+import SelectUserByOrz from './SelectUserByOrz';
 
 const { RangePicker, MonthPicker } = DatePicker;
 const { TextArea, Search } = Input;
@@ -55,6 +56,7 @@ export const Combos = {
   // // table: MixinTable,
   // rangePickerMonth: RangePickerMonth,
   place: Place, // 地址选择
+  selectUserByOrz: SelectUserByOrz, // 地址选择
 };
 
 // 获取多层对象的值
@@ -105,7 +107,7 @@ const FormBox = forwardRef(
           str = '-';
         }
         if (item.render) {
-          str = item.render(str, showObj, form);
+          str = item.render(str, showObj, form) || '-';
         }
         return (
           <div
@@ -253,7 +255,7 @@ export const packageData = ({ vals, types = {}, dateType }) => {
       });
     } else {
       Object.assign(objSend, {
-        [fieldName]: vals[item] || '',
+        [fieldName]: vals[item], //  || ''
       });
     }
   });

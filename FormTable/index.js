@@ -1,16 +1,16 @@
 import React, { useImperativeHandle, forwardRef } from "react";
 import { ExtTable } from "suid";
-import { Combos, packageDataIn } from "@/components/FormBox";
+import FormBox, { Combos } from "@/components/FormBox";
 import { Form, Input } from "antd";
 
 class EditableCell extends React.Component {
   // 列-数据战术
   renderCell = () => {
-    const { children, form, iteminput, rowkey, record, edit, intorow } = this.props;
+    const { children, form, iteminput, rowkey, record, edit, intorow, dataIndex } = this.props;
 
     return (form && iteminput && !!edit) ? renderInput({
       iteminput, form,
-      rowkey, record, intorow
+      rowkey, record, intorow, dataIndex
     }) : children;
   };
 
@@ -35,7 +35,7 @@ class EditableCell extends React.Component {
 
 function renderInput({
   iteminput, form,
-  rowkey, record, intorow = false
+  rowkey, record, intorow = false, dataIndex
 }) {
   if (!form) {
     return ''
@@ -68,7 +68,7 @@ function renderInput({
     input = getFieldDecorator(`${name}.${iteminput.key}_${iteminput.type}`,
       {
         rules,
-        initialValue: iteminput.props?.initialValue || record[iteminput.key],
+        initialValue: iteminput.props?.initialValue || record[dataIndex],
       })(
         <Item
           record={record}
@@ -84,7 +84,7 @@ function renderInput({
   } else {
     input = getFieldDecorator(`${name}.${iteminput.key}`, {
       rules,
-      initialValue: iteminput.props?.initialValue || record[iteminput.key],
+      initialValue: iteminput.props?.initialValue || record[dataIndex],
     })(
       <Input
         record={record}
@@ -111,10 +111,11 @@ function renderInput({
 function FormTable({
   visible,
   columns,
-  dataSource,
+  dataSource = [],
   form,
   rowKey = "id",
   intorow = false,
+  hideForm = [],
   ...props
 }, ref) {
   // 暂支持请求数据分页
@@ -132,7 +133,7 @@ function FormTable({
         if (typeof obj.iteminput === "function") {
           obj.iteminput = obj.iteminput(record, form)
         }
-        if(typeof obj.edit === "function"){
+        if (typeof obj.edit === "function") {
           obj.edit = obj.edit(record, form)
         }
         return {
@@ -142,24 +143,48 @@ function FormTable({
           edit: obj.edit ? 1 : 0,
           iteminput: obj.iteminput,
           intorow: intorow ? 1 : 0,
+          dataIndex: item.dataIndex
         }
       },
     };
   });
 
-  return (visible && <ExtTable
-    showSearch={false}
-    dataSource={dataSource}
-    columns={columns}
-    rowKey={typeof rowKey === "function" ? rowKey : (r) => r[rowKey] || r.id}
-    {...props}
-    components={{
-      body: {
-        // row: EditableFormRow,
-        cell: EditableCell,
-      },
-    }}
-  />)
+  const newArr = []
+
+  dataSource.forEach(res => {
+    hideForm.forEach(re => {
+      newArr.push({
+        ...res,
+        key: `${res.id}.${re.key}`,
+        props: {
+          initialValue: res[re.key],
+          ...(re?.props || {}),
+        }
+      })
+    })
+  })
+
+  return (visible && <>
+    <ExtTable
+      showSearch={false}
+      dataSource={dataSource}
+      columns={columns}
+      rowKey={typeof rowKey === "function" ? rowKey : (r) => r[rowKey] || r.id}
+      {...props}
+      components={{
+        body: {
+          // row: EditableFormRow,
+          cell: EditableCell,
+        },
+      }}
+    />
+    <div style={{ display: "none" }}>
+      <FormBox
+        form={form}
+        formItems={newArr}
+      />
+    </div>
+  </>)
 }
 
 

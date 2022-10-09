@@ -1,5 +1,22 @@
-import { useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useState, useRef, useEffect } from 'react'
 import moment from 'moment';
+import { Tag } from 'antd';
+
+/**
+ * @description: 所有表单组件【selectUserByOrz】的必选校验
+ * SELECTUSERBYORZ_REQUIRED_RULE
+*/
+export const selectUserByOrzRequiredRule = (message = '请选择变更负责人') => ({
+  required: true,
+  message,
+  validator({ message, required }, value, callback) {
+    if (Object.keys(value)?.length || !required) {
+      callback()
+    } else {
+      callback(message)
+    }
+  }
+})
 
 /**
  * @description: 统一时间格式的展示
@@ -7,7 +24,7 @@ import moment from 'moment';
  * @return: 返回处理好的时间格式
  * 
 */
-export const rowShowTime = (date) => date ? moment(date).format('YYYY-MM-DD HH:mm:ss') : '';
+export const rowShowTime = (date, format = 'YYYY-MM-DD HH:mm:ss') => date ? moment(date).format(format) : '';
 
 /**
  * @description: 找到配置项中的对应value值
@@ -16,7 +33,14 @@ export const rowShowTime = (date) => date ? moment(date).format('YYYY-MM-DD HH:m
  * @return: 返回对应对象的 lable
  * 
 */
-export const optionFindLable = (options, val) => options.find(re => re.value === val)?.label;
+export const optionFindLable = (options, val) => {
+  const obj = options.find(re => re.value === val);
+  let show = obj?.label
+  if (show && obj?.color) {
+    show = <Tag color={obj.color}>{show}</Tag>
+  }
+  return show
+};
 
 /** 
  * @description: 搜索数据打包
@@ -143,6 +167,17 @@ export const useClientHeight = (ref = {}) => {
 };
 
 /**
+ * @description: 获取上一个状态
+*/
+export const usePrevious = (value) => {
+  const ref = useRef()
+  useEffect(() => {
+    ref.current = value
+  }, [value])
+  return ref.current
+}
+
+/**
  * @description: 统一时间格式
  * @param {Date} date 时间日期
  * @param {string} format 时间格式 默认："YYYY-MM-DD HH:mm:ss"
@@ -169,22 +204,19 @@ export const downloadBlobFile = (data, name) => {
   }
 }
 
-
 /**
-    * 
-    * 返回对相应的数据类型
-    */
+  *
+  * 返回对相应的数据类型
+  */
 function getType(data) {
   return Object.prototype.toString.call(data).substring(8).split(/]/)[0]
 }
 
 /**
- * 
- * @param {*} sourceObj     
- * @param {*} compareObj    
+ * @param {*} sourceObj
+ * @param {*} compareObj
  * 
  * 比较对象是否相等
- * 
  */
 export function comparisonObject(sourceObj, compareObj) {
   // eslint-disable-next-line no-throw-literal
@@ -222,3 +254,19 @@ export function comparisonObject(sourceObj, compareObj) {
   }
   return true;
 }
+
+// 常用的一些正则表达式
+/**
+ *  @description: 座机号码验证
+*/
+export const REGEXP_LANDLINE = /(?:(\\(\\+?86\\))(0[0-9]{2,3}-?)?([2-9][0-9]{6,7})+(-[0-9]{1,4})?)|(?:(86-?)?(0[0-9]{2,3}-?)?([2-9][0-9]{6,7})+(\\-[0-9]{1,4})?)/
+
+/**
+ *  @description: 手机号码验证
+*/
+export const REGEXP_PHONE = /^[1][2,3,4,5,6,7,8,9][0-9]{9}$/
+
+/**
+ *  @description: 邮箱号验证
+*/
+export const REGEXP_EMAIL = /[a-zA-Z0-9]+([-_.][A-Za-zd]+)*@([a-zA-Z0-9]+[-.])+[A-Za-zd]{2,5}$/

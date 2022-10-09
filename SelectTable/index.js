@@ -114,7 +114,7 @@ const SelectTable = forwardRef(({
     });
 
     if (tableRef && tableRef.current) {
-      tableRef.current.handlerPageChange(1, 30)
+      tableRef.current.handlerPageChange(1, tableRef.current.state.pagination.pageSize)
     }
   }
 

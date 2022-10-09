@@ -3,7 +3,9 @@ import PerBtn from '@/components/PerBtn';
 import { Button, Modal, Input, message, Select, Result, Divider, Tag } from 'antd';
 import styles from './index.less';
 import { downloadBlobFile } from '../utils';
-import { ExtTable } from '@sei/suid'
+// import { ExtTable } from '@sei/suid';
+import MyTable from '../MyTable';
+import moment from 'moment'
 
 const { Option } = Select;
 
@@ -16,12 +18,15 @@ export default function Import({
   importData,
   repeatStr,
   templateName = "name",
-  showColumns = []
+  showColumns = [],
+  callback,
+  recordUrl,
 }) {
 
   const [file, setFile] = useState();
   const [visible, setVisible] = useState(false); // 上传弹窗
   const [visibleShow, setVisibleShow] = useState(false); // 展示弹窗
+  const [visibleRecord, setVisibleRecord] = useState(false); // 记录
   const [showData, setShowData] = useState(); // 展示用数据
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState('overwrite');
@@ -40,7 +45,13 @@ export default function Import({
       .then((res) => {
         const { success, data, message: msg, headers } = res;
         if (success) {
-          downloadBlobFile(data, decodeURI(headers['content-disposition'].split("''")[1]));
+          const name = headers['content-disposition']?.split("''")[1]
+          downloadBlobFile(
+            data,
+            name
+              ? decodeURI(name)
+              : `${templateName + moment().format("YYYYMMDDHHmmss")}.xlsx`
+          );
         } else {
           message.error(msg);
         }
@@ -49,17 +60,24 @@ export default function Import({
   }
 
   function onOk() {
+    if (!file) {
+      message.warning('请选中可导入文件');
+      return
+    }
+    setLoading(true);
     importData({ type, file, })
       .then(({ success, message: msg, data }) => {
         if (success) {
           message.success(msg);
           onCancel();
           setVisibleShow(true);
-          setShowData(data)
+          setShowData(data);
+          callback && callback()
         } else {
           message.error(msg);
         }
       })
+      .finally(() => setLoading(false))
   }
 
   function onCancel() {
@@ -72,10 +90,27 @@ export default function Import({
     setShowData(undefined);
   }
 
+  function onCancelRecord() {
+    setVisibleRecord(false);
+  }
+
+  function recordOpen() {
+    setVisibleRecord(true);
+  }
+
   const describe = <span>
-    导入总数数据{showData?.count}条，覆盖{showData?.overwriteCount}条，跳过{showData?.skipCount}条，导入成功{showData?.successCount}条，导入失败<span style={{ color: "red" }}>{showData?.failCount}</span>条（成功数包含了覆盖数）
+    导入总数数据{showData?.count}条，覆盖{showData?.overwriteCount}条，跳过{showData?.skipCount}条，导入成功<span style={{ color: "green" }}>{showData?.successCount}</span>条，导入失败<span style={{ color: "red" }}>{showData?.failCount}</span>条（成功数包含了覆盖数）
   </span>
 
+  const columns = [
+    {
+      title: '校验状态',
+      dataIndex: 'id',
+      render: (t) => t ? <Tag color="green">成功</Tag> : <Tag color="magenta">失败</Tag>
+    },
+    { title: '错误信息', dataIndex: 'errorMessage', width: 300 },
+    ...showColumns,
+  ]
 
   return (
     <>
@@ -85,12 +120,24 @@ export default function Import({
         visible={visible}
         okText={"导入"}
         okButtonProps={{ loading }}
-        cancelText={"取消"}
         onCancel={onCancel}
         width={"800px"}
         onOk={onOk}
         maskClosable={false}
         bodyStyle={{ padding: "24px 24px 24px 40px" }}
+        footer={[
+          <Button key="back" onClick={onCancel}>
+            取消
+          </Button>,
+          recordUrl
+            ? <Button key="record" onClick={recordOpen}>
+              导入记录
+            </Button>
+            : null,
+          <Button key="submit" type="primary" loading={loading} onClick={onOk}>
+            确定
+          </Button>,
+        ]}
       >
         <div className={styles['upload-box']}>
           <h3>
@@ -113,7 +160,7 @@ export default function Import({
           </Select>
           <h3>三、请选择需要导入的文件</h3>
           <div style={{ display: "flex" }}>
-            <Input readOnly value={file?.name} style={{ width: "400px" }} />
+            <Input readOnly value={file?.name} style={{ width: "400px" }} placeholder={'请选择文件'} />
             <Button style={{ position: "relative", marginLeft: "8px" }} type="primary" >
               上传文件
               <input
@@ -135,20 +182,13 @@ export default function Import({
         maskClosable={false}
       >
         {
-          showData?.rows.length
+          visibleShow
+          && (showData?.rows.length
             ? <>
               {describe}
               <Divider dashed />
-              <ExtTable
-                columns={[
-                  {
-                    title: '校验状态',
-                    dataIndex: 'id',
-                    render: (t) => t ? <Tag color="green">成功</Tag> : <Tag color="magenta">失败</Tag>
-                  },
-                  { title: '错误信息', dataIndex: 'errorMessage', width: 300 },
-                  ...showColumns,
-                ]}
+              <MyTable
+                columns={columns}
                 showSearch={false}
                 rowKey={(item, index) => `${item.errorMessage}-${index}`}
                 dataSource={showData.rows}
@@ -171,7 +211,32 @@ export default function Import({
                 </Button>,
                 <Button onClick={onCancelShow}>关闭</Button>,
               ]}
-            />
+            />)
+        }
+      </Modal>
+      <Modal
+        title={`导入记录`}
+        visible={visibleRecord}
+        footer={null}
+        width={"80%"}
+        onCancel={onCancelRecord}
+        maskClosable={false}
+      >
+        {
+          visibleRecord && <MyTable
+            // columns={columns}
+            columns={[
+              { title: '导入描述', dataIndex: 'remark', width: 500 },
+            ]}
+            showSearch={false}
+            rowKey={(item, index) => `${item.errorMessage}-${index}`}
+            store={{
+              url: recordUrl,
+              type: 'POST',
+              autoLoad: true,
+            }}
+            height="600px"
+          />
         }
       </Modal>
     </>

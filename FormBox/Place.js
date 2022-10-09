@@ -87,20 +87,31 @@ const Place = forwardRef(
         });
       const lastIndex = 3;
 
-      if (!targetOption || targetOption.children) {
+      if (!targetOption) {
         // 找不到对应的父级元素，就不在继续查询子元素
-        // 如果已经存在子元素，就不再去查询接口
-        return;
+        return
       }
-      const showVal = [...inputShowNeedArr, targetOption.label]
-      setInputShow(showVal);
 
-      if (key !== lastIndex) {
-        targetOption.children = packaging(targetOption.son);
-      }
-      setOptions([...optionsArr]);
-      if (key < lastIndex) {
-        valueSetOptions(arr, key + 1, targetOption.children, showVal);
+      if (targetOption.children) {
+        // 如果已经存在子元素，就不再去查询接口
+        if (showInputON && key < lastIndex) {
+          const showVal = [...inputShowNeedArr, targetOption.label];
+          setInputShow(showVal);
+          valueSetOptions(arr, key + 1, targetOption.children, showVal);
+        } else {
+          return;
+        }
+      } else {
+        const showVal = [...inputShowNeedArr, targetOption.label]
+        setInputShow(showVal);
+
+        if (key !== lastIndex) {
+          targetOption.children = packaging(targetOption.son);
+        }
+        setOptions([...optionsArr]);
+        if (key < lastIndex) {
+          valueSetOptions(arr, key + 1, targetOption.children, showVal);
+        }
       }
     }
 
