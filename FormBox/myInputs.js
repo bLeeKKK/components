@@ -231,7 +231,9 @@ export const MySelect = forwardRef(
  * @param {Array<{children}>} options 外部传如列表
  * @param {} store 是否使用网络请求数据
  * @param {Function} renderTree 渲染显示，参数带入每个行项
+ * @param {Function} loadData 可以，加载数据自定义加载函数
  * @param {boolean} inTheOuter 打包时是否需要数组包裹一下
+ * @param {boolean} openLoad 点开下拉框就请求一次数据
  * @return: 树状选择框
  * 
  * options 和 store 至少存在一个！！！
@@ -244,9 +246,11 @@ export const MyTreeSelect = forwardRef((
     renderTree,
     store,
     inTheOuter = false,
+    openLoad = false,
     childrenStr = 'children',
     treeNodeProps = () => ({}),
     cascadeParams = {},
+    loadData,
     ...props
   },
   ref
@@ -298,9 +302,11 @@ export const MyTreeSelect = forwardRef((
   const nOptions = reqOptions || options;
 
   return <TreeSelect
+    onDropdownVisibleChange={(flag) => { if (flag && openLoad) getData() }}
     ref={ref}
     searchPlaceholder="快速搜索"
     treeNodeFilterProp="title" // 搜索使用 title 字段
+    loadData={loadData ? (treeNode) => loadData(treeNode, setReqOptions) : undefined}
     {...props}
   >
     {
@@ -312,7 +318,7 @@ export const MyTreeSelect = forwardRef((
         treeNodeProps,
       })
     }
-  </TreeSelect>
+  </TreeSelect >
 })
 
 function renderOptions({
