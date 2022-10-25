@@ -182,7 +182,7 @@ export const usePrevious = (value) => {
  * @param {Date} date 时间日期
  * @param {string} format 时间格式 默认："YYYY-MM-DD HH:mm:ss"
 */
-export const timerFormat = (date, format = "YYYY-MM-DD HH:mm:ss") => moment(date).format(format)
+export const timerFormat = (date, format = "YYYY-MM-DD HH:mm:ss") => date ? moment(date).format(format) : null
 
 /**
  * @description: 下载文件使用
