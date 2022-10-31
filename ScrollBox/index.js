@@ -1,7 +1,7 @@
 import React, { useEffect, forwardRef, useState, useRef, useImperativeHandle } from 'react';
 import { Link, Element, Events } from 'react-scroll';
 import styles from './styles.less';
-import { useClientHeight } from '../utils/index'
+import { useClientHeight } from '../utils';
 
 /** 
  * @description: 滚动条组件

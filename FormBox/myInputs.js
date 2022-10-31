@@ -165,17 +165,20 @@ export const MySelect = forwardRef(
       );
     };
 
-    let opt = options || reqOptions;
-
+    const searchMode = (pageInfo || searchProperties) ? {
+      open,
+      onDropdownVisibleChange: show
+    } : {}
+    const opt = options || reqOptions;
     return (
       <Select
-        open={open}
-        onDropdownVisibleChange={show}
+        {...searchMode}
         loading={lodaing}
-        remotePaging={true}
+        remotePaging
         style={style}
-        showSearch={true}
-        optionFilterProp={'label'}
+        // 搜索
+        showSearch
+        optionFilterProp='label'
         {...props}
         onChange={(val, datas) => {
           const data = datas && datas.props && datas.props.data;
@@ -196,7 +199,7 @@ export const MySelect = forwardRef(
                 style={{ padding: "8px 8px 0 8px", display: "flex", justifyContent: "center", alignItems: "center", borderTop: "1px solid rgb(222, 222, 222)" }}
                 ref={searchRef}
               >
-                <Search onSearch={(v) => setSearchVal(v)} />
+                <Search onSearch={(val) => setSearchVal(val)} />
               </div>
             }
             {menu}

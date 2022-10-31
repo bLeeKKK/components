@@ -59,7 +59,7 @@ const FullModal = ({
                   topBtns
                     ? topBtns
                     : <>
-                      <Button style={{ marginRight: "8px" }} onClick={onCancel} {...cancelButtonProps}>关闭</Button>,
+                      <Button style={{ marginRight: "8px" }} onClick={onCancel} {...cancelButtonProps}>关闭</Button>
                       <Button type='primary' onClick={onOk} {...okButtonProps}>保存</Button>
                     </>
                 }
