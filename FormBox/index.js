@@ -31,7 +31,7 @@ export const Combos = {
   moneyInput: MoneyInput, // 钱 输入
 
   // antd
-  datePicker: DatePicker, // 时间日期选择
+  datePicker: DatePicker, // 时间选择
   rangePicker: RangePicker, // 时间段选择
   monthPicker: MonthPicker, // 月份时间选择
   textarea: TextArea, // 文字输入区域
