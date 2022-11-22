@@ -167,7 +167,7 @@ const FormBox = forwardRef(
     };
 
     return (
-      <div style={styleBox} className={'my-form-box'}>
+      <div style={styleBox} className='my-form-box'>
         <Row {...(rowProps || {})}>
           {formItems.map((item, index) => {
             // afterSelect代理

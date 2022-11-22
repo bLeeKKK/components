@@ -128,7 +128,7 @@ export const MySelect = forwardRef(
       } else {
         setTimeout(() => {
           setOpen(false)
-        }, 50)
+        }, 100)
       }
     }
 
