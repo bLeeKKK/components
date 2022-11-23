@@ -205,8 +205,7 @@ export const downloadBlobFile = (data, name) => {
 }
 
 /**
-  *
-  * 返回对相应的数据类型
+  * @description: 返回对相应的数据类型
   */
 function getType(data) {
   return Object.prototype.toString.call(data).substring(8).split(/]/)[0]
@@ -221,7 +220,7 @@ function getType(data) {
 export function comparisonObject(sourceObj, compareObj) {
   // eslint-disable-next-line no-throw-literal
   if (arguments.length < 2) throw "Incorrect number of parameters";
-  let sourceType = getType(sourceObj);
+  const sourceType = getType(sourceObj);
   if (sourceType !== getType(compareObj)) return false;
   // Not objects and arrays
   if (sourceType !== "Array" && sourceType !== "Object" && sourceType !== "Set" && sourceType !== "Map") {
@@ -232,18 +231,19 @@ export function comparisonObject(sourceObj, compareObj) {
       return sourceObj.toString() === compareObj.toString()
     }
     return sourceObj === compareObj
-  } else if (sourceType === "Array") {
+  }
+  if (sourceType === "Array") {
     if (sourceObj.length !== compareObj.length) return false;
     if (sourceObj.length === 0) return true;
-    for (let i = 0; i < sourceObj.length; i++) {
+    for (let i = 0; i < sourceObj.length; i += 1) {
       if (!comparisonObject(sourceObj[i], compareObj[i])) return false;
     }
   } else if (sourceType === "Object") {
-    let sourceKeyList = Reflect.ownKeys(sourceObj);
-    let compareKeyList = Reflect.ownKeys(compareObj);
+    const sourceKeyList = Reflect.ownKeys(sourceObj);
+    const compareKeyList = Reflect.ownKeys(compareObj);
     let key;
     if (sourceKeyList.length !== compareKeyList.length) return false;
-    for (let i = 0; i < sourceKeyList.length; i++) {
+    for (let i = 0; i < sourceKeyList.length; i += 1) {
       key = sourceKeyList[i];
       if (key !== compareKeyList[i]) return false;
       if (!comparisonObject(sourceObj[key], compareObj[key])) return false;
@@ -254,6 +254,24 @@ export function comparisonObject(sourceObj, compareObj) {
   }
   return true;
 }
+
+/**
+ *  @description: 获取弹窗模式
+ * @param {number} editType 模式 1:新增 2:编辑 3:查看
+*/
+export function getModel(editType) {
+  switch (editType) {
+    case 3:
+      return "查看"
+    case 2:
+      return "编辑"
+    case 1:
+      return "新增"
+    default:
+      return '-'
+  }
+}
+
 
 // 常用的一些正则表达式
 /**

@@ -1,8 +1,8 @@
 import React, { forwardRef, useState, useEffect, useRef, useImperativeHandle } from 'react';
 import { Select, TreeSelect, Pagination, Input } from 'antd';
+import ReactDom from 'react-dom';
 import { request } from '@/utils';
 import { comparisonObject } from '../utils';
-import ReactDom from 'react-dom';
 
 const { Option } = Select;
 const { TreeNode } = TreeSelect;

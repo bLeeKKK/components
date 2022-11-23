@@ -1,7 +1,7 @@
 import React, { useImperativeHandle, forwardRef } from "react";
 import { ExtTable } from "suid";
-import FormBox, { Combos } from "@/components/FormBox";
 import { Form, Input } from "antd";
+import FormBox, { Combos } from "@/components/FormBox";
 
 class EditableCell extends React.Component {
   // 列-数据战术
