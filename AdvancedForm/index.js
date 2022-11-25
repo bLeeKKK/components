@@ -21,7 +21,7 @@ const AdvancedForm = forwardRef(
       formSpan = 24,
       outSearchBtn = false,
       outBtnStayle = {},
-      describe = '', // 底部文字描述
+      separate = true, // 外部和内部 分离查询
     },
     ref,
   ) => {
@@ -30,6 +30,35 @@ const AdvancedForm = forwardRef(
     const [visible, triggerVisible] = useState(false);
     const hide = () => triggerVisible(false);
     const haveFormItem = !!formItems.length;
+
+    /**
+     * @description: 调用触发搜索回掉
+     * @param {boolean} separateTimer 执行时确定是否分开处理查询
+    */
+    const handleSubmit = ({ separateTimer = false, ...vals } = {}) => {
+      const Form = refForm?.form;
+      const Formout = refFormOut?.form;
+      const outVal = Formout?.getFieldsValue();
+      const inVal = Form?.getFieldsValue();
+      if (outVal?.value_search) outVal.value_search = outVal.value_search.trim();
+
+      if (separateTimer || separate) {
+        onOk(visible ? inVal : {}, visible ? {} : outVal, { ...vals });
+      } else {
+        onOk(inVal, outVal, { ...vals });
+      }
+      hide();
+    }
+
+    const handleReset = () => {
+      const Form = refForm.form;
+      if (Form) Form.resetFields();
+    }
+
+    const handleResetOut = () => {
+      const Form = refFormOut.form;
+      if (Form) Form.resetFields();
+    }
 
     useEffect(() => {
       document.addEventListener('keydown', tabOpenSearch)
@@ -60,7 +89,7 @@ const AdvancedForm = forwardRef(
     function tabOpenSearch(e) {
       // Tab 打开搜索
       if (e.keyCode === 70 && e.ctrlKey && haveFormItem) {
-        triggerVisible(visible => !visible)
+        triggerVisible(vis => !vis)
         e.stopPropagation()
       }
     }
@@ -73,36 +102,6 @@ const AdvancedForm = forwardRef(
       }
     }
 
-    // 调用触发搜索回掉
-    function handleSubmit(...vals) {
-      const Form = refForm?.form;
-      const Formout = refFormOut?.form;
-      const outVal = Formout?.getFieldsValue();
-      if (outVal?.value_search) outVal.value_search = outVal.value_search.trim();
-      onOk(Form?.getFieldsValue(), outVal, ...vals);
-      hide();
-    }
-
-    function handleReset() {
-      const Form = refForm.form;
-      Form &&
-        Form.multipleSelect &&
-        Form.multipleSelect.forEach(res => {
-          res([]);
-        });
-      Form && Form.resetFields();
-    }
-
-    function handleResetOut() {
-      const Form = refFormOut.form;
-      Form &&
-        Form.multipleSelect &&
-        Form.multipleSelect.forEach(res => {
-          res([]);
-        });
-      Form && Form.resetFields();
-    }
-
     return (
       <>
         <div style={{ display: 'flex', alignItems: 'center', width: '100%', ...outBtnStayle }}>
@@ -113,11 +112,6 @@ const AdvancedForm = forwardRef(
             onClose={hide}
             visible={visible}
             bodyStyle={{ paddingBottom: 80 }}
-          // onKeyUp={(e) => {
-          //   if (e.keyCode === 13) {
-          //     handleSubmit()
-          //   }
-          // }}
           >
             <div>
               <FormBox
@@ -131,7 +125,6 @@ const AdvancedForm = forwardRef(
                 // rowProps={{ gutter: [0, 8] }}
                 {...formBoxProps}
               />
-              <div className={styles.description}>{describe}</div>
               <div className={[nofooter ? classnames([styles.hide]) : styles.btnWrapper]}>
                 <Button onClick={handleReset} className={styles.btns}>
                   重置

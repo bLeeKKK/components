@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, useRef, useEffect } from 'react'
+import React, { useLayoutEffect, useState, useRef, useEffect } from 'react'
 import moment from 'moment';
 import { Tag } from 'antd';
 
@@ -9,11 +9,11 @@ import { Tag } from 'antd';
 export const selectUserByOrzRequiredRule = (message = '请选择变更负责人') => ({
   required: true,
   message,
-  validator({ message, required }, value, callback) {
+  validator({ message: msg, required }, value, callback) {
     if (Object.keys(value)?.length || !required) {
       callback()
     } else {
-      callback(message)
+      callback(msg)
     }
   }
 })
@@ -59,69 +59,68 @@ export const searchDataPackaged = ({
   dateFormat = 'YYYY-MM-DD',
   fieldDate,
 }) => {
-  if (!obj) {
-    return []
-  }
-  const keys = Object.keys(obj);
+  if (!obj) return []
+  const newObj = { ...obj }
+  const keys = Object.keys(newObj);
   const arrFilter = [];
   keys.forEach(item => {
     const [operator, fieldName, type] = item.split('_');
-    if (type === 'list' && obj[item]) {
-      delete obj[item];
+    if (type === 'list' && newObj[item]) {
+      delete newObj[item];
     }
     let fieldType = null;
-    if (type === 'datePicker' && obj[item]) {
-      obj[item] = moment(obj[item]).format(dateFormat);
+    if (type === 'datePicker' && newObj[item]) {
+      newObj[item] = moment(newObj[item]).format(dateFormat);
       fieldType = 'date';
     }
-    if (type === 'selectMultiple' && obj[item] && obj[item].length === 0) {
-      obj[item] = undefined;
+    if (type === 'selectMultiple' && newObj[item] && newObj[item].length === 0) {
+      newObj[item] = undefined;
     }
-    if (type === 'treeSelect' && obj[item] && obj[item].length === 0) {
-      obj[item] = undefined;
+    if (type === 'treeSelect' && newObj[item] && newObj[item].length === 0) {
+      newObj[item] = undefined;
     }
-    if (type === 'rangePicker' && rangePickerMode === 'arr' && obj[item]) {
+    if (type === 'rangePicker' && rangePickerMode === 'arr' && newObj[item]) {
       if (noTypeData) {
         const arr = [];
-        obj[item].forEach((i) => {
+        newObj[item].forEach((i) => {
           arr.push(moment(i).format(dateFormat));
         });
-        obj[item] = arr;
+        newObj[item] = arr;
         fieldType = null;
       } else {
         const arr = [];
-        obj[item].forEach((i) => {
+        newObj[item].forEach((i) => {
           arr.push(moment(i).format(dateFormat));
         });
-        obj[item] = arr;
+        newObj[item] = arr;
         fieldType = fieldDate || (dateFormat === 'YYYY-MM-DD' ? 'date' : 'datetime');
       }
-    } else if (type === 'rangePicker' && rangePickerMode === 'list' && obj[item]) {
-      if (obj[item][0] || obj[item][1]) {
+    } else if (type === 'rangePicker' && rangePickerMode === 'list' && newObj[item]) {
+      if (newObj[item][0] || newObj[item][1]) {
         if (noTypeData) {
           arrFilter.push({
             fieldName,
             operator: 'GE',
-            value: moment(obj[item][0]).format(dateFormat),
+            value: moment(newObj[item][0]).format(dateFormat),
             fieldType: null,
           });
           arrFilter.push({
             fieldName,
             operator: 'LE',
-            value: moment(obj[item][1]).format(dateFormat),
+            value: moment(newObj[item][1]).format(dateFormat),
             fieldType: null,
           });
         } else {
           arrFilter.push({
             fieldName,
             operator: 'GE',
-            value: moment(obj[item][0]).format(dateFormat),
+            value: moment(newObj[item][0]).format(dateFormat),
             fieldType: fieldDate || (dateFormat === 'YYYY-MM-DD' ? 'date' : 'datetime'),
           });
           arrFilter.push({
             fieldName,
             operator: 'LE',
-            value: moment(obj[item][1]).format(dateFormat),
+            value: moment(newObj[item][1]).format(dateFormat),
             fieldType: fieldDate || (dateFormat === 'YYYY-MM-DD' ? 'date' : 'datetime'),
           });
         }
@@ -137,7 +136,7 @@ export const searchDataPackaged = ({
     arrFilter.push({
       fieldName,
       operator,
-      value: typeof obj[item] === 'string' ? obj[item].trim() : obj[item],
+      value: typeof newObj[item] === 'string' ? newObj[item].trim() : newObj[item],
       fieldType,
     });
   });

@@ -42,12 +42,12 @@ const ScrollBox = forwardRef(
 
     useEffect(() => {
       Events.scrollEvent.register(id, function () {
-        console(id, arguments);
+        console.log(id);
       });
       return () => { Events.scrollEvent.remove(id); }
     }, []);
     useEffect(() => {
-      const dom = barRef.current.getElementsByClassName(styles['active'])?.[0]
+      const dom = barRef.current.getElementsByClassName(styles.active)?.[0]
       setWidthInk(dom?.offsetWidth);
       setScrollLeft(dom?.offsetLeft || 0);
     }, [activeKey])
@@ -62,11 +62,11 @@ const ScrollBox = forwardRef(
                 .map((item) => {
                   return <Link
                     key={item.props.id}
-                    className={`${styles['bar-item']} ${activeKey === item.props.id ? styles['active'] : ''}`}
+                    className={`${styles['bar-item']} ${activeKey === item.props.id ? styles.active : ''}`}
                     containerId={id}
                     to={item.props.id}
-                    smooth={true}
-                    spy={true}
+                    smooth
+                    spy
                     duration={500}
                     onSetActive={(key) => setActiveKey(key)}
                     onClick={() => { setActiveKey(item.props.id) }}
@@ -75,7 +75,7 @@ const ScrollBox = forwardRef(
                   </Link>
                 })
             }
-            <div className={styles['ink-bar']} style={{ width: `${widthInk}px`, transform: `translate3d(${scrollLeft}px, 0px, 0px)` }}></div>
+            <div className={styles['ink-bar']} style={{ width: `${widthInk}px`, transform: `translate3d(${scrollLeft}px, 0px, 0px)` }} />
           </div>
         </div>
 
