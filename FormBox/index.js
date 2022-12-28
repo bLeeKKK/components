@@ -99,15 +99,16 @@ const FormBox = forwardRef(
   ) => {
     const { getFieldDecorator } = form;
     useImperativeHandle(ref, () => ({ form }));
-    const renderFormItem = function (item) {
+    const renderFormItem = (item) => {
       if (item.type === 'show' || justShow) {
         // 显示
-        let str = showObj && getValue(showObj, item.key);
+        const strOrigin = showObj && getValue(showObj, item.key);
+        let str = strOrigin
         if (str === undefined || str === null || str === '') {
           str = '-';
         }
         if (item.render) {
-          str = item.render(str, showObj, form) || '-';
+          str = item.render(strOrigin, showObj, form) || '-';
         }
         return (
           <div
@@ -140,7 +141,7 @@ const FormBox = forwardRef(
           ...(item.configItem || {}),
         })(
           <Item
-            allowClear={true}
+            allowClear
             form={form}
             name={`${item.key}_${item.type}`}
             style={{ width: '100%', ...(item.style || {}) }}

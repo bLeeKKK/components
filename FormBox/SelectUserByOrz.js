@@ -47,6 +47,7 @@ const loop = (data, filterVal, keys = []) => {
       }
       continue
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     flag && arr.push(<TreeNode disabled={item.frozen} key={item.id} title={item.name} data-item={item} />)
   }
   return [arr, keys]
@@ -79,7 +80,7 @@ function handleChangeCheck({ checked, value, dataNode }, setSheckedObj, onlyOneU
   if (checked) {
     setSheckedObj(obj => {
       if (onlyOneUser) return { [value]: dataNode }
-      else return { ...obj, [value]: dataNode }
+      return { ...obj, [value]: dataNode }
     })
   } else {
     setSheckedObj(obj => {
@@ -218,46 +219,49 @@ const SelectUserByOrz = forwardRef((
             onFocus={() => setOpen(true)}
           >
             <Layout>
-              <Sider style={{ padding: "8px" }}>
-                <Content>
-                  <Layout>
-                    {/* <Search
+              <Content>
+                <Layout>
+                  {/* <Search
                     placeholder="搜索组织机构"
                     onSearch={(val) => setSearchTitle(val)}
                   /> */}
-                    <Content style={{ height: "200px", overflow: "auto", background: '#fff' }}>
-                      {
-                        treeDom.length
-                          ? <Tree
-                            showLine
-                            expandedKeys={expandedKeys}
-                            onExpand={(keys) => setExpandedKeys(keys)}
-                            switcherIcon={<Icon type="down" />}
-                            onSelect={(_, { node, selected }) => {
-                              if (onlyOneMent) setSheckedObj({})
-                              if (selected) {
-                                setOrz(node?.props?.['data-item'])
-                              } else {
-                                setOrz()
-                              }
-                            }}
-                            filterTreeNode={({ props }) => {
-                              if (searchTitle) {
-                                return (props.title || '').includes(searchTitle)
-                              }
-                              return false
-                            }}
-                          >
-                            {treeDom}
-                          </Tree>
-                          : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据" />
-                      }
-                    </Content>
-                  </Layout>
-                </Content>
+                  <Content style={{ height: "400px", padding: '8px', background: '#fff', borderRight: '1px solid #ddd', width: "210px", overflow: "auto" }}>
+                    {
+                      treeDom.length
+                        ? <Tree
+                          showLine
+                          expandedKeys={expandedKeys}
+                          onExpand={(keys) => setExpandedKeys(keys)}
+                          switcherIcon={<Icon type="down" />}
+                          onSelect={(_, { node, selected }) => {
+                            if (onlyOneMent) setSheckedObj({})
+                            if (selected) {
+                              setOrz(node?.props?.['data-item'])
+                            } else {
+                              setOrz()
+                            }
+                          }}
+                          filterTreeNode={({ props }) => {
+                            if (searchTitle) {
+                              return (props.title || '').includes(searchTitle)
+                            }
+                            return false
+                          }}
+                        >
+                          {treeDom}
+                        </Tree>
+                        : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据" />
+                    }
+                  </Content>
+                </Layout>
+              </Content>
+
+
+              <Sider style={{ padding: "8px" }}>
 
                 {/* 选择用 */}
-                <Content style={{ height: "200px", overflow: "auto", background: '#fff', borderTop: '1px solid #ddd', display: 'flex', flexDirection: "column" }}>
+                <Content style={{ height: "200px", overflow: "auto", background: '#fff', display: 'flex', flexDirection: "column" }}>
+                  <h5>待选中</h5>
                   {
                     !onlyOneUser && <Checkbox
                       onFocus={() => refSelect.current.focus()}
@@ -284,33 +288,36 @@ const SelectUserByOrz = forwardRef((
                         dataNode={res}
                         checked={!!checkedObj[res.id]}
                       >{res.userName}</Checkbox>)
-                      : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="选择组织" />
+                      : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无可选择" />
+                  }
+                </Content>
+
+                {/* 展示用 */}
+                <Content style={{ height: "200px", overflow: "auto", background: '#fff', borderTop: '1px solid #ddd' }} >
+                  <h5>选中</h5>
+                  {
+                    selectIng.length
+                      ? selectIng.map(res => <>
+                        <Checkbox
+                          onFocus={() => refSelect.current.focus()}
+                          key={res.id}
+                          value={res.id}
+                          onChange={({ target }) => {
+                            if (!target) return
+                            handleChangeCheck(target, setSheckedObj, onlyOneUser)
+                          }}
+                          checked={!!checkedObj[res.id]}
+                        >{res.userName}</Checkbox>
+                        <br />
+                      </>)
+                      : <div style={{ display: "flex", height: "100%", width: "100%", alignItems: "center", justifyContent: "center" }}>
+                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无选中" />
+                      </div>
                   }
                 </Content>
               </Sider>
 
-              <Content style={{ padding: '8px', background: '#fff', borderLeft: '1px solid #ddd', width: "100%", minWidth: "210px" }}>
-                {/* 展示用 */}
-                {
-                  selectIng.length
-                    ? selectIng.map(res => <>
-                      <Checkbox
-                        onFocus={() => refSelect.current.focus()}
-                        key={res.id}
-                        value={res.id}
-                        onChange={({ target }) => {
-                          if (!target) return
-                          handleChangeCheck(target, setSheckedObj, onlyOneUser)
-                        }}
-                        checked={!!checkedObj[res.id]}
-                      >{res.userName}</Checkbox>
-                      <br />
-                    </>)
-                    : <div style={{ display: "flex", height: "100%", width: "100%", alignItems: "center", justifyContent: "center" }}>
-                      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="选择员工" />
-                    </div>
-                }
-              </Content>
+
             </Layout>
 
             <div style={{ padding: '8px 16px', textAlign: 'right' }}>
