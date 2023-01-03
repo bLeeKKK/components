@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import PerBtn from '@/components/PerBtn';
 import { Button, Modal, Input, message, Select, Result, Divider, Tag } from 'antd';
+import moment from 'moment';
+import PerBtn from '@/components/PerBtn';
 import styles from './index.less';
 import { downloadBlobFile } from '../utils';
 // import { ExtTable } from '@sei/suid';
 import MyTable from '../MyTable';
-import moment from 'moment'
 
 const { Option } = Select;
 
@@ -31,7 +31,7 @@ export default function Import({
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState('overwrite');
 
-  function opOpen() {
+  const opOpen = () => {
     setVisible(true);
   }
 
@@ -59,7 +59,13 @@ export default function Import({
       .finally(() => setLoading(false))
   }
 
-  function onOk() {
+
+  const onCancel = () => {
+    setVisible(false);
+    setFile(undefined)
+  }
+
+  const onOk = () => {
     if (!file) {
       message.warning('请选中可导入文件');
       return
@@ -72,7 +78,7 @@ export default function Import({
           onCancel();
           setVisibleShow(true);
           setShowData(data);
-          callback && callback()
+          if (callback) callback()
         } else {
           message.error(msg);
         }
@@ -80,21 +86,17 @@ export default function Import({
       .finally(() => setLoading(false))
   }
 
-  function onCancel() {
-    setVisible(false);
-    setFile(undefined)
-  }
 
-  function onCancelShow() {
+  const onCancelShow = () => {
     setVisibleShow(false);
     setShowData(undefined);
   }
 
-  function onCancelRecord() {
+  const onCancelRecord = () => {
     setVisibleRecord(false);
   }
 
-  function recordOpen() {
+  const recordOpen = () => {
     setVisibleRecord(true);
   }
 
@@ -116,12 +118,12 @@ export default function Import({
     <>
       <PerBtn pKey={pKey} onClick={opOpen}>导入</PerBtn>
       <Modal
-        title={`线索导入`}
+        title="导入"
         visible={visible}
-        okText={"导入"}
+        okText="导入"
         okButtonProps={{ loading }}
         onCancel={onCancel}
-        width={"800px"}
+        width="800px"
         onOk={onOk}
         maskClosable={false}
         bodyStyle={{ padding: "24px 24px 24px 40px" }}
@@ -160,24 +162,24 @@ export default function Import({
           </Select>
           <h3>三、请选择需要导入的文件</h3>
           <div style={{ display: "flex" }}>
-            <Input readOnly value={file?.name} style={{ width: "400px" }} placeholder={'请选择文件'} />
+            <Input readOnly value={file?.name} style={{ width: "400px" }} placeholder="请选择文件" />
             <Button style={{ position: "relative", marginLeft: "8px" }} type="primary" >
               上传文件
               <input
-                type={'file'}
+                type="file"
                 style={{ left: 0, top: 0, width: "100%", height: "100%", position: "absolute", opacity: 0 }}
                 onChange={selectFile}
-                value={''}
+                value=""
               />
             </Button>
           </div>
         </div>
       </Modal>
       <Modal
-        title={`导入信息`}
+        title="导入信息"
         visible={visibleShow}
         footer={null}
-        width={"80%"}
+        width="80%"
         onCancel={onCancelShow}
         maskClosable={false}
       >
@@ -215,10 +217,10 @@ export default function Import({
         }
       </Modal>
       <Modal
-        title={`导入记录`}
+        title="导入记录"
         visible={visibleRecord}
         footer={null}
-        width={"80%"}
+        width="80%"
         onCancel={onCancelRecord}
         maskClosable={false}
       >
