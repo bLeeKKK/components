@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
-import { Button, Drawer } from 'antd';
+import { Button, Drawer, Badge } from 'antd';
 import { ExtIcon } from '@sei/suid';
 import classnames from 'classnames';
 import FormBox from '../FormBox';
@@ -22,6 +22,7 @@ const AdvancedForm = forwardRef(
       outSearchBtn = false,
       outBtnStayle = {},
       separate = true, // 外部和内部 分离查询
+      verification = false, // 是否验证
     },
     ref,
   ) => {
@@ -30,51 +31,83 @@ const AdvancedForm = forwardRef(
     const [visible, triggerVisible] = useState(false);
     const hide = () => triggerVisible(false);
     const haveFormItem = !!formItems.length;
+    const requireFormItem = verification
+      ? !!formItems.some(item => item.rules.some(ite => ite.required))
+      : false;
 
     /**
      * @description: 调用触发搜索回掉
      * @param {boolean} separateTimer 执行时确定是否分开处理查询
-    */
-    const handleSubmit = ({ separateTimer = false, ...vals } = {}) => {
-      const Form = refForm?.form;
-      const Formout = refFormOut?.form;
-      const outVal = Formout?.getFieldsValue();
-      const inVal = Form?.getFieldsValue();
-      if (outVal?.value_search) outVal.value_search = outVal.value_search.trim();
+     */
+    const handleSubmit = async ({ separateTimer = false, ...vals } = {}) => {
+      try {
+        const Form = refForm?.form;
+        const Formout = refFormOut?.form;
+        const outVal = Formout?.getFieldsValue();
+        const inVal = Form?.getFieldsValue();
 
-      if (separateTimer || separate) {
-        onOk(visible ? inVal : {}, visible ? {} : outVal, { ...vals });
-      } else {
-        onOk(inVal, outVal, { ...vals });
+        await new Promise((resolve, reject) => {
+          if (verification) {
+            if (Form) {
+              Form.validateFields(err => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve();
+                }
+              });
+            }
+            if (Formout) {
+              Formout.validateFields(err => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve();
+                }
+              });
+            }
+          } else {
+            resolve();
+          }
+        });
+
+        if (outVal?.value_search) outVal.value_search = outVal.value_search.trim();
+        if (separateTimer || separate) {
+          onOk(visible ? inVal : {}, visible ? {} : outVal, { ...vals });
+        } else {
+          onOk(inVal, outVal, { ...vals });
+        }
+        hide();
+      } catch (e) {
+        console.log(e);
       }
-      hide();
-    }
+    };
 
     const handleReset = () => {
       const Form = refForm.form;
       if (Form) Form.resetFields();
-    }
+    };
 
     const handleResetOut = () => {
       const Form = refFormOut.form;
       if (Form) Form.resetFields();
-    }
+    };
 
     useEffect(() => {
-      document.addEventListener('keydown', tabOpenSearch)
-      return () => document.removeEventListener('keydown', tabOpenSearch)
+      document.addEventListener('keydown', tabOpenSearch);
+      return () => document.removeEventListener('keydown', tabOpenSearch);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     useEffect(() => {
       if (visible) {
-        document.addEventListener('keydown', handleSearch, true)
+        document.addEventListener('keydown', handleSearch, true);
       } else {
-        document.removeEventListener('keydown', handleSearch, true)
+        document.removeEventListener('keydown', handleSearch, true);
       }
-      return () => document.removeEventListener('keydown', handleSearch, true)
+      return () => document.removeEventListener('keydown', handleSearch, true);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [visible])
+    }, [visible]);
 
     useImperativeHandle(ref, () => {
       return {
@@ -89,16 +122,16 @@ const AdvancedForm = forwardRef(
     function tabOpenSearch(e) {
       // Tab 打开搜索
       if (e.keyCode === 70 && e.ctrlKey && haveFormItem) {
-        triggerVisible(vis => !vis)
-        e.stopPropagation()
+        triggerVisible(vis => !vis);
+        e.stopPropagation();
       }
     }
 
     function handleSearch(e) {
       // 回车搜索
       if (e.keyCode === 13) {
-        handleSubmit()
-        e.stopImmediatePropagation()
+        handleSubmit();
+        e.stopImmediatePropagation();
       }
     }
 
@@ -151,14 +184,16 @@ const AdvancedForm = forwardRef(
             ''
           )}
           {haveFormItem ? (
-            <Button onClick={() => triggerVisible(!visible)} {...advBtnProps}>
-              {/* <Icon type="filter" /> */}
-              <ExtIcon
-                type="filter"
-                style={{ marginRight: '2px', fontSize: '18px', verticalAlign: 'middle' }}
-              />
-              {extra}
-            </Button>
+            <Badge dot={requireFormItem}>
+              <Button onClick={() => triggerVisible(!visible)} {...advBtnProps}>
+                {/* <Icon type="filter" /> */}
+                <ExtIcon
+                  type="filter"
+                  style={{ marginRight: '2px', fontSize: '18px', verticalAlign: 'middle' }}
+                />
+                {extra}
+              </Button>
+            </Badge>
           ) : (
             ''
           )}
