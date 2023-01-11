@@ -177,6 +177,7 @@ const FormTable = forwardRef(({
       dataSource={dataSource}
       columns={newColumns}
       rowKey={rowkey}
+      pagination={false}
       {...props}
       components={{
         body: {
