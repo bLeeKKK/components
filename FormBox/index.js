@@ -285,6 +285,46 @@ export const packageDataIn = ({ items = [], show = {} }) => {
   return obj;
 };
 
+/** 
+ * @description: 打包表单数据（受控组件使用）
+ * @param {Object} obj 需要打包的对象
+ * 
+ * */
+export const mapPropsDataTransform = (obj, flag = "field") => {
+  if (!obj) return {};
+
+  if (flag === "field") {
+    return Object
+      .keys(obj)
+      .reduce((pre, d) => {
+        const o = obj?.[d];
+        if (typeof o !== 'object' || o === null) return pre;
+
+        if (o.name) {
+          return {
+            ...pre,
+            [o.name]: Form.createFormField({ ...o }),
+          }
+        }
+        return {
+          ...(mapPropsDataTransform(o, "field") || {})
+        }
+      }, {});
+  }
+
+  // 处理 flag 是 ‘value’ 的情况
+  // 存在 xxx.xxx 的情况这里需要修改逻辑处理
+  return Object
+    .keys(obj)
+    .reduce((pre, d) => {
+      return {
+        ...pre,
+        [d]: Form.createFormField({ value: obj[d] })
+      }
+    }, {})
+}
+
+
 /**
  * 表单包裹组件
  * 可以出入自定义 Form 表单
