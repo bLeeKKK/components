@@ -180,6 +180,8 @@ const FormTable = forwardRef(({
       columns={newColumns}
       rowKey={rowkey}
       pagination={false}
+      width="100%"
+      scroll={{ x: "max-content" }}
       {...props}
       components={{
         body: {
