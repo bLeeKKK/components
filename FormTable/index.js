@@ -10,9 +10,9 @@ function EditableRow(props) {
 function EditableCell(props) {
 
   const renderCell = () => {
-    const { children, form, iteminput, rowkey, record, edit, intorow, dataIndex } = props;
+    const { children, form, iteminput, rowkey, record, edit, intorow, dataIndex, justShow } = props;
 
-    return (form && iteminput && edit)
+    return (form && iteminput && edit && !justShow)
       ? renderInput({
         iteminput,
         form,
@@ -118,6 +118,7 @@ const FormTable = forwardRef(({
   form,
   rowkey = "id",
 
+  justShow = false,
   intorow = false,
   hideForm = [],
   ...props
@@ -149,6 +150,7 @@ const FormTable = forwardRef(({
             iteminput: obj.iteminput,
             intorow,
             dataIndex: obj.dataIndex,
+            justShow,
           }
         },
       };

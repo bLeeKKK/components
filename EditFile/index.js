@@ -53,7 +53,7 @@ const EditFile = forwardRef(
       return {
         getEditFile,
         resetEditFile,
-        saveImportExcel,
+        saveImportExcel, // 绑定附件
       };
     });
 
@@ -89,7 +89,7 @@ const EditFile = forwardRef(
       ...props,
     };
 
-    function handleCancel() {
+    const handleCancel = () => {
       setEditFileVisible(false);
       // 清空的话，关闭弹窗列表就请空了，这里不能清空列表
       // setEditFile([])
@@ -148,17 +148,17 @@ const EditFile = forwardRef(
                 {children}
               </div>
               <Modal
-                title={`附件`}
+                title="附件"
                 visible={editFileVisible}
                 // onOk={handleOk}
                 onCancel={handleCancel}
-                width={'800px'}
+                width="800px"
                 maskClosable={false}
-                forceRender={true}
+                forceRender
                 footer={
                   entityId
                     ? [
-                      <Button key={'save'} type="primary" loading={loading} onClick={() => saveImportExcel()}>
+                      <Button key="save" type="primary" loading={loading} onClick={() => saveImportExcel()}>
                         保存
                       </Button>,
                     ]
@@ -175,7 +175,7 @@ const EditFile = forwardRef(
                   ? <>
                     <Divider />
                     <div style={{ textAlign: "right" }}>
-                      <Button onClick={() => saveImportExcel()} type={'primary'} >绑定附件</Button>
+                      <Button onClick={() => saveImportExcel()} type="primary" >绑定附件</Button>
                     </div>
                   </>
                   : undefined
