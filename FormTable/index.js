@@ -9,17 +9,17 @@ function EditableRow(props) {
 
 function EditableCell(props) {
   const renderCell = () => {
-    const { children, form, iteminput, rowkey, record, edit, intorow, dataIndex } = props;
+    const { children, form, iteminput, rowkey, record, edit, intorow, dataIndex, justShow } = props;
 
-    return form && iteminput && edit
+    return (form && iteminput && edit && !justShow)
       ? renderInput({
-          iteminput,
-          form,
-          rowkey,
-          record,
-          intorow,
-          dataIndex,
-        })
+        iteminput,
+        form,
+        rowkey,
+        record,
+        intorow,
+        dataIndex,
+      })
       : children;
   };
 
@@ -41,9 +41,9 @@ function renderInput({ iteminput, form, rowkey, record, intorow = false, dataInd
   const { getFieldDecorator } = form;
   let input = null;
   let rules = iteminput.rules || [];
-  let newOnchange = () => {};
+  let newOnchange = () => { };
   if (iteminput?.props?.onChange) {
-    newOnchange = function(...props) {
+    newOnchange = function (...props) {
       iteminput.props.onChange.call(this, ...props, record, form);
     };
   }
@@ -88,29 +88,28 @@ function renderInput({ iteminput, form, rowkey, record, intorow = false, dataInd
 
 /**
  * @param {rowkey} "id"
- */
-const FormTable = forwardRef(
-  (
-    {
-      visible = true,
-      columns = [],
-      dataSource = [],
-      form,
-      rowkey = 'id',
+*/
+const FormTable = forwardRef(({
+  visible = true,
+  columns = [],
+  dataSource = [],
+  form,
+  rowkey = "id",
 
-      intorow = false,
-      hideForm = [],
-      ...props
-    },
-    ref,
-  ) => {
-    // 暂支持请求数据分页
+  justShow = false,
+  intorow = false,
+  hideForm = [],
+  ...props
+}, ref) => {
+  // 暂支持请求数据分页
 
-    useImperativeHandle(ref, () => {
-      return form;
-    });
+  useImperativeHandle(ref, () => {
+    return form;
+  });
 
-    const newColumns = columns.map(item => {
+
+  const newColumns = columns
+    .map(item => {
       return {
         ...item,
         onCell: record => {
@@ -129,53 +128,55 @@ const FormTable = forwardRef(
             iteminput: obj.iteminput,
             intorow,
             dataIndex: obj.dataIndex,
-          };
+            justShow,
+          }
         },
       };
     });
 
-    const newArr = [];
+  const newArr = []
 
-    dataSource.forEach(res => {
-      hideForm.forEach(re => {
-        newArr.push({
-          ...res,
-          key: `${res.id}.${re.key}`,
-          props: {
-            initialValue: res[re.key],
-            ...(re?.props || {}),
-          },
-        });
-      });
-    });
+  dataSource
+    .forEach(res => {
+      hideForm
+        .forEach(re => {
+          newArr.push({
+            ...res,
+            key: `${res.id}.${re.key}`,
+            props: {
+              initialValue: res[re.key],
+              ...(re?.props || {}),
+            }
+          })
+        })
+    })
 
-    return (
-      visible && (
-        <>
-          <Table
-            showSearch={false}
-            dataSource={dataSource}
-            columns={newColumns}
-            rowKey={rowkey}
-            pagination={false}
-            {...props}
-            components={{
-              body: {
-                row: EditableRow,
-                cell: EditableCell,
-              },
-            }}
-          />
+  return (visible && <>
+    <Table
+      showSearch={false}
+      dataSource={dataSource}
+      columns={newColumns}
+      rowKey={rowkey}
+      pagination={false}
+      width="100%"
+      scroll={{ x: "max-content" }}
+      {...props}
+      components={{
+        body: {
+          row: EditableRow,
+          cell: EditableCell,
+        },
+      }}
+    />
 
-          {/* 隐藏表单字段 */}
-          <div style={{ display: 'none' }}>
-            <FormBox form={form} formItems={newArr} />
-          </div>
-        </>
-      )
-    );
-  },
-);
+
+    {/* 隐藏表单字段 */}
+    <div style={{ display: 'none' }}>
+      <FormBox form={form} formItems={newArr} />
+    </div>
+  </>
+  )
+});
 
 /**
  * 表单包裹组件
