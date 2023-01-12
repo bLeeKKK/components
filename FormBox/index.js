@@ -13,10 +13,7 @@ import {
 } from 'antd';
 import momentFn from 'moment';
 import { ComboGrid, ComboList, ComboTree, MoneyInput } from '@sei/suid';
-import {
-  MySelect,
-  MyTreeSelect,
-} from './myInputs';
+import { MySelect, MyTreeSelect } from './myInputs';
 import Place from './Place';
 import SelectUserByOrz from './SelectUserByOrz';
 
@@ -63,8 +60,8 @@ export const Combos = {
 const getValue = (obj, key) => {
   const keys = key.split('.');
   let value = obj;
-  let len = keys.length;
-  for (let i = 0; i < len; i++) {
+  const len = keys.length;
+  for (let i = 0; i < len; i += 1) {
     if (Object.prototype.toString.call(value) === '[object Object]') {
       value = value[keys[i]];
     } else {
@@ -99,11 +96,11 @@ const FormBox = forwardRef(
   ) => {
     const { getFieldDecorator } = form;
     useImperativeHandle(ref, () => ({ form }));
-    const renderFormItem = (item) => {
+    const renderFormItem = item => {
       if (item.type === 'show' || justShow) {
         // 显示
         const strOrigin = showObj && getValue(showObj, item.key);
-        let str = strOrigin
+        let str = strOrigin;
         if (str === undefined || str === null || str === '') {
           str = '-';
         }
@@ -126,7 +123,7 @@ const FormBox = forwardRef(
         );
       }
       const Item = Combos[item.type] || Input;
-      const { initialValue, ...otherProps } = item?.props || {}
+      const { initialValue, ...otherProps } = item?.props || {};
       if (item.type === 'span') {
         return getFieldDecorator(`${item.key}_${item.type}`, {
           initialValue,
@@ -168,11 +165,11 @@ const FormBox = forwardRef(
     };
 
     return (
-      <div style={styleBox} className='my-form-box'>
+      <div style={styleBox} className="my-form-box">
         <Row {...(rowProps || {})}>
           {formItems.map((item, index) => {
             // afterSelect代理
-            let afterSelect = () => { };
+            let afterSelect = () => {};
             if (item?.props?.afterSelect) {
               afterSelect = item.props.afterSelect;
             }
@@ -180,12 +177,13 @@ const FormBox = forwardRef(
               afterSelect.bind(form)(...parameter);
             }
             if (item.props && item.props.afterSelect) {
+              // eslint-disable-next-line no-param-reassign
               item.props.afterSelect = afterSelectProxy;
             }
             // afterSelect代理
 
             // afterClear代理
-            let afterClear = () => { };
+            let afterClear = () => {};
             if (item?.props?.afterClear) {
               afterClear = item.props.afterClear;
             }
@@ -193,20 +191,23 @@ const FormBox = forwardRef(
               afterClear.bind(form)(...parameter);
             }
             if (item.props && item.props.afterClear) {
+              // eslint-disable-next-line no-param-reassign
               item.props.afterClear = afterClearProxy;
             }
             // afterClear 代理
 
             return [
               <Col
+                // eslint-disable-next-line react/no-array-index-key
                 key={`${item.key}-${index}`}
                 span={item.span || span}
                 style={item.hide ? { display: 'none' } : { ...(item.styleCol || {}) }}
                 {...(item.propCol || {})}
               >
                 <Form.Item
-                  className={`${outLineHeight ? 'out-line-height' : ''} ${showErr ? 'show-err-box' : ''
-                    } ${noBorder ? 'no-border' : ''} ${noBottomMargin ? 'no-bottom-margin' : ''}`}
+                  className={`${outLineHeight ? 'out-line-height' : ''} ${
+                    showErr ? 'show-err-box' : ''
+                  } ${noBorder ? 'no-border' : ''} ${noBottomMargin ? 'no-bottom-margin' : ''}`}
                   label={item.title}
                   {...(item.formLayouts ? item.formLayouts : formLayout)}
                   {...FormItemProps}
@@ -215,8 +216,9 @@ const FormBox = forwardRef(
                   {renderFormItem(item)}
                 </Form.Item>
               </Col>,
-              !!item.extra ? (
+              item.extra ? (
                 <Col
+                  // eslint-disable-next-line react/no-array-index-key
                   key={`extra-${index}`}
                   span={item.extra?.span || item.span || span}
                   style={item.hide ? { display: 'none' } : { ...(item.styleCol || {}) }}
@@ -233,21 +235,25 @@ const FormBox = forwardRef(
   },
 );
 
-const timerFormat = 'YYYY-MM-DD HH:mm:ss'
+const timerFormat = 'YYYY-MM-DD HH:mm:ss';
 export const packageData = ({ vals, types = {}, dateType }) => {
   const keys = Object.keys(vals);
   const objSend = {};
   keys.forEach(item => {
     const [fieldName, type] = item.split('_');
     if (types[fieldName] === 'num') {
+      // eslint-disable-next-line no-param-reassign
       vals[item] = Number(vals[item]);
     } else if (types[fieldName] === 'str') {
+      // eslint-disable-next-line no-param-reassign
       vals[item] = String(vals[item]);
     }
     if (type === 'datePicker' && vals[item]) {
+      // eslint-disable-next-line no-param-reassign
       vals[item] = momentFn(vals[item]).format(dateType?.[fieldName] || timerFormat);
     } else if (type === 'tableRadio' && vals[item]) {
       // console.log(vals[item])
+      // eslint-disable-next-line no-param-reassign
       vals[item] = vals[item] && vals[item][0];
     }
     if (vals[item] === 0 || vals[item] === false) {
@@ -264,86 +270,80 @@ export const packageData = ({ vals, types = {}, dateType }) => {
 };
 
 export const packageDataIn = ({ items = [], show = {} }) => {
-  let obj = {};
+  const obj = {};
   items.forEach(res => {
     if (show[res.key] !== undefined && show[res.key] !== null) {
       if (res.type === 'tableRadio') {
-        obj[`${res.key}${res.type ? '_' + res.type : ''}`] = [show[res.key]];
+        obj[`${res.key}${res.type ? `_${res.type}` : ''}`] = [show[res.key]];
         return;
       }
       if (res.type === 'datePicker') {
-        obj[`${res.key}${res.type ? '_' + res.type : ''}`] = momentFn(show[res.key]);
+        obj[`${res.key}${res.type ? `_${res.type}` : ''}`] = momentFn(show[res.key]);
         return;
       }
       if (res.type === 'selectMultiple') {
         // 请单独使用 Form 表单上的 multipleSelect 数组中的方法赋值
         return;
       }
-      obj[`${res.key}${res.type ? '_' + res.type : ''}`] = show[res.key];
+      obj[`${res.key}${res.type ? `_${res.type}` : ''}`] = show[res.key];
     }
   });
   return obj;
 };
 
-/** 
+/**
  * @description: 打包表单数据（受控组件使用）
  * @param {Object} obj 需要打包的对象
- * 
+ *
  * */
-export const mapPropsDataTransform = (obj, flag = "field") => {
+export const mapPropsDataTransform = (obj, flag = 'field') => {
   if (!obj) return {};
 
-  if (flag === "field") {
-    return Object
-      .keys(obj)
-      .reduce((pre, d) => {
-        const o = obj?.[d];
-        if (typeof o !== 'object' || o === null) return pre;
+  if (flag === 'field') {
+    return Object.keys(obj).reduce((pre, d) => {
+      const o = obj?.[d];
+      if (typeof o !== 'object' || o === null) return pre;
 
-        if (o.name) {
-          return {
-            ...pre,
-            [o.name]: Form.createFormField({ ...o }),
-          }
-        }
+      if (o.name) {
         return {
-          ...(mapPropsDataTransform(o, "field") || {})
-        }
-      }, {});
+          ...pre,
+          [o.name]: Form.createFormField({ ...o }),
+        };
+      }
+      return {
+        ...(mapPropsDataTransform(o, 'field') || {}),
+      };
+    }, {});
   }
 
   // 处理 flag 是 ‘value’ 的情况
   // 存在 xxx.xxx 的情况这里需要修改逻辑处理
-  return Object
-    .keys(obj)
-    .reduce((pre, d) => {
-      return {
-        ...pre,
-        [d]: Form.createFormField({ value: obj[d] })
-      }
-    }, {})
-}
-
+  return Object.keys(obj).reduce((pre, d) => {
+    return {
+      ...pre,
+      [d]: Form.createFormField({ value: obj[d] }),
+    };
+  }, {});
+};
 
 /**
  * 表单包裹组件
  * 可以出入自定义 Form 表单
-*/
+ */
 const FormCom = Form.create({
   onFieldsChange(props, changedFields) {
-    props.onFieldsChange && props.onFieldsChange(changedFields, props);
+    if (props.onFieldsChange) props.onFieldsChange(changedFields, props);
   },
   onValuesChange(props, changedFields) {
-    props.onValuesChange && props.onValuesChange(changedFields, props);
+    if (props.onValuesChange) props.onValuesChange(changedFields, props);
   },
 })(FormBox);
 
 function WForm({ form, ...props }) {
-  if (!!form) {
-    return <FormBox form={form} {...props} />
-  } else {
-    return <FormCom {...props} />
+  if (form) {
+    return <FormBox form={form} {...props} />;
   }
+  return <FormCom {...props} />;
 }
 
 export default WForm;
