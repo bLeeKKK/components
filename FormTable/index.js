@@ -153,6 +153,7 @@ const FormTable = forwardRef(({
 
   return (visible && <>
     <Table
+      bordered
       showSearch={false}
       dataSource={dataSource}
       columns={newColumns}

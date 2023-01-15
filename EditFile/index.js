@@ -22,6 +22,7 @@ export const updateDocIds = data =>
  * @param {ReactDOM} children 弹窗模式，触发打开弹窗的dom
  * @param {boolean} windMode 是否启动，弹窗模式
  * @param {boolean} directlyBind 上传组件后是否直接绑定
+ * @param {boolean} bindBtn 是否展示绑定按钮
  * @param {number} limtMin 最大上传文件数量
  * @param {number} limtMax 最小上传文件数量
  * */
@@ -38,6 +39,7 @@ const EditFile = forwardRef(
       children,
       windMode = false,
       directlyBind = false,
+      bindBtn = false,
       limtMin,
       limtMax,
       ...props
@@ -171,14 +173,14 @@ const EditFile = forwardRef(
             : <>
               <Attachment {...attachmentProps} />
               {
-                directlyBind
+                (!directlyBind || bindBtn)
                   ? <>
                     <Divider />
                     <div style={{ textAlign: "right" }}>
                       <Button onClick={() => saveImportExcel()} type="primary" >绑定附件</Button>
                     </div>
                   </>
-                  : undefined
+                  : null
               }
             </>
         }
