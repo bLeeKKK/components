@@ -22,7 +22,7 @@ export const updateDocIds = data =>
  * @param {string} entityId 绑定id
  * @param {ReactDOM} children 弹窗模式，触发打开弹窗的dom
  * @param {boolean} windMode 是否启动，弹窗模式
- * @param {boolean} directlyBind 上传组件后是否直接绑定
+ * @param {boolean} directlyBind 上传附件后是否直接绑定
  * @param {boolean} bindBtn 是否展示绑定按钮
  * @param {number} limtMin 最大上传文件数量
  * @param {number} limtMax 最小上传文件数量
@@ -43,6 +43,7 @@ const EditFile = forwardRef(
       bindBtn = false,
       limtMin,
       limtMax,
+      allowUpload = true,
       ...props
     },
     ref,
@@ -51,9 +52,6 @@ const EditFile = forwardRef(
     const [editFileVisible, setEditFileVisible] = useState(false);
     const [loading, setLoding] = useState(false);
     const attachmentRef = useRef();
-
-    // 注：该状态是非窗口模式下，该按钮展示控制才会生效。同时控制是否上传附件后，直接绑定到业务数据上。
-    const bindBtnShow = !directlyBind || bindBtn;
 
     // 是否执行绑定附件常量
     const BIND_FILE = useRef(false);
@@ -67,7 +65,7 @@ const EditFile = forwardRef(
     });
 
     useUpdateEffect(() => {
-      if (!bindBtnShow && !windMode && editFile.some(res => res.status === "uploading")) {
+      if (directlyBind && editFile.some(res => res.status === "uploading") && entityId) {
         BIND_FILE.current = true;
       }
 
@@ -83,17 +81,9 @@ const EditFile = forwardRef(
       serviceHost: `${SERVER_PATH}/edm-service`,
       customBatchDownloadFileName: true,
       // viewType: 'card',
+      allowUpload,
       onAttachmentRef: ref => {
         attachmentRef.current = ref
-
-        // if (ref?.handlerUpload) {
-        //   const fun = ref?.handlerUpload
-        //   ref.handlerUpload = (file) => {
-        //     const arr = ref?.props?.fileList || []
-        //     saveImportExcel(undefined, [...arr, file])
-        //     fun(file);
-        //   }
-        // }
       },
       entityId,
       onChange: (files, errorFileCount) => {
@@ -103,9 +93,6 @@ const EditFile = forwardRef(
           // if (bindBtnShow && files.every(res => res.status === "done")) saveImportExcel(undefined, files)
         }
       },
-      // extra: directlyBind
-      //   ? <Button onClick={() => saveImportExcel()} type={'primary'} >保存绑定</Button>
-      //   : undefined,
       ...props,
     };
 
@@ -178,7 +165,7 @@ const EditFile = forwardRef(
                 maskClosable={false}
                 forceRender
                 footer={
-                  entityId
+                  bindBtn && entityId && allowUpload
                     ? [
                       <Button key="save" type="primary" loading={loading} onClick={() => saveImportExcel()}>
                         保存
@@ -194,7 +181,7 @@ const EditFile = forwardRef(
               {/* 非弹窗模式 */}
               <Attachment {...attachmentProps} />
               {
-                bindBtnShow
+                entityId && bindBtn && allowUpload
                   ? <>
                     <Divider />
                     <div style={{ textAlign: "right" }}>
