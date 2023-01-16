@@ -1,6 +1,7 @@
 import React, { useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { Modal, Button, message, Divider } from 'antd';
 import { Attachment } from '@sei/suid';
+import { useUpdateEffect } from 'ahooks';
 import constants from '@/utils/constants';
 import { request } from '@/utils';
 
@@ -51,6 +52,12 @@ const EditFile = forwardRef(
     const [loading, setLoding] = useState(false);
     const attachmentRef = useRef();
 
+    // 注：该状态是非窗口模式下，该按钮展示控制才会生效。同时控制是否上传附件后，直接绑定到业务数据上。
+    const bindBtnShow = !directlyBind || bindBtn;
+
+    // 是否执行绑定附件常量
+    const BIND_FILE = useRef(false);
+
     useImperativeHandle(ref, () => {
       return {
         getEditFile,
@@ -59,12 +66,23 @@ const EditFile = forwardRef(
       };
     });
 
+    useUpdateEffect(() => {
+      if (!bindBtnShow && !windMode && editFile.some(res => res.status === "uploading")) {
+        BIND_FILE.current = true;
+      }
+
+      if (BIND_FILE.current && editFile.every(res => res.status === "done")) {
+        saveImportExcel();
+        BIND_FILE.current = false;
+      }
+    }, [editFile]);
+
     const attachmentProps = {
       fileList: editFile,
       showViewType: false,
       serviceHost: `${SERVER_PATH}/edm-service`,
       customBatchDownloadFileName: true,
-      viewType: 'card',
+      // viewType: 'card',
       onAttachmentRef: ref => {
         attachmentRef.current = ref
 
@@ -82,7 +100,7 @@ const EditFile = forwardRef(
         if (errorFileCount === 0) {
           // console.log(files)
           setEditFile(files);
-          // saveImportExcel(undefined, files)
+          // if (bindBtnShow && files.every(res => res.status === "done")) saveImportExcel(undefined, files)
         }
       },
       // extra: directlyBind
@@ -143,6 +161,8 @@ const EditFile = forwardRef(
 
     return (
       <>
+
+        {/* 弹窗模式 */}
         {
           windMode
             ? (<>
@@ -171,9 +191,10 @@ const EditFile = forwardRef(
               </Modal>
             </>)
             : <>
+              {/* 非弹窗模式 */}
               <Attachment {...attachmentProps} />
               {
-                (!directlyBind || bindBtn)
+                bindBtnShow
                   ? <>
                     <Divider />
                     <div style={{ textAlign: "right" }}>
@@ -184,6 +205,8 @@ const EditFile = forwardRef(
               }
             </>
         }
+
+
       </>
     );
   },
