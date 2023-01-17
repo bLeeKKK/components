@@ -114,6 +114,7 @@ const AdvancedForm = forwardRef(
         form: refForm?.form,
         formOut: refFormOut?.form,
         handleReset,
+        handleResetOut,
         handleSubmit,
         hide,
       };

@@ -1,6 +1,8 @@
 import React, { forwardRef, useState, useEffect, useRef, useImperativeHandle } from 'react';
 import { Select, TreeSelect, Pagination, Input } from 'antd';
 import ReactDom from 'react-dom';
+import { CancelToken } from 'axios'
+import { useUpdateEffect, useCreation } from 'ahooks';
 import { request } from '@/utils';
 import { comparisonObject } from '../utils';
 
@@ -21,6 +23,7 @@ export const MySelect = forwardRef(
       },
       style,
       optionRender, // 传入 option 自定义样式
+      optionProps = () => ({}),
       otherLine = [],
       dataTypeFun = v => v, // 保证返回的数据类型 就行装换
       cascadeParams = {},
@@ -43,6 +46,7 @@ export const MySelect = forwardRef(
     const selectRef = useRef();
     const pageRef = useRef();
     const searchRef = useRef();
+    const flagReq = useCreation(() => ({ cancel: null }))
 
     useImperativeHandle(ref, () => ({ selectRef }));
 
@@ -55,11 +59,12 @@ export const MySelect = forwardRef(
       setV(value);
     }, [value]);
 
-    useEffect(() => {
+    useUpdateEffect(() => {
       if (!store) return
       if (cascadeParams === params) {
         // 第一次进入数据一样
         getData(cascadeParams)
+        return
       }
 
       // 深度比较对象
@@ -87,14 +92,22 @@ export const MySelect = forwardRef(
 
         // data数据
         data: {
-          // 其他参数
-          ...(params?.data || {}), ...(store?.data || {}),
           // 分页参数
           pageInfo: pageInfo ? { ...pageInfoObj, page: current, } : undefined,
+          // 其他参数
+          ...(params?.data || {}), ...(store?.data || {}),
           ...searchObj,
-        }
+        },
+
+        // 自己取消请求
+        // headers: { neverCancel: true },
+        cancelToken: new CancelToken(cancelFn => {
+          if (flagReq.cancel) flagReq.cancel('cancel')
+          flagReq.cancel = cancelFn
+        })
       })
-        .then(({ data }) => {
+        .then(({ data, success }) => {
+          if (!success) return
           let optitons = []
           if (Array.isArray(data)) {
             optitons = data
@@ -114,7 +127,7 @@ export const MySelect = forwardRef(
         .finally(() => setLoading(false));
     }
 
-    function onChangePage(page) {
+    const onChangePage = (page) => {
       setCurrent(page)
     }
 
@@ -148,6 +161,7 @@ export const MySelect = forwardRef(
             key={`${k}-${item.value}`}
             value={dataTypeFun(item.value)}
             label={item.label}
+            {...(optionProps(item))}
           >
             {optionRender(item)}
           </Option>
@@ -159,6 +173,7 @@ export const MySelect = forwardRef(
           key={`${k}-${item.value}`}
           value={dataTypeFun(item.value)}
           label={item.label}
+          {...(optionProps(item))}
         >
           {item.label}
         </Option>
