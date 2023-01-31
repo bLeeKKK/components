@@ -1,6 +1,13 @@
-import React, { useLayoutEffect, useState, useRef, useEffect } from 'react'
+import React, { useLayoutEffect, useState, useRef, useEffect, useCallback } from 'react'
 import moment from 'moment';
 import { Tag } from 'antd';
+import { useDeepCompareEffect } from 'ahooks';
+import { request } from '@/utils';
+import constants, { SEI_COMMONS_DATA } from '@/utils/constants';
+
+const { SERVER_PATH } = constants;
+
+// `${SERVER_PATH}/${SEI_COMMONS_DATA}/dataDict/getCanUseDataDictValues?dictCode=CUSTOMER-TYPE`,
 
 /**
  * @description: 所有表单组件【selectUserByOrz】的必选校验
@@ -175,6 +182,67 @@ export const usePrevious = (value) => {
   }, [value])
   return ref.current
 }
+
+/**
+ * @description: 获取字典数据
+*/
+// 循环请求字典详情，并设置
+function reqDict({ codes, setDict, setLoading }) {
+  setLoading(true)
+  Promise
+    .all(codes
+      .map(code => {
+        // 循环对每一个code发出请求
+        return request({
+          url: `${SERVER_PATH}/${SEI_COMMONS_DATA}/dataDict/getCanUseDataDictValues`,
+          method: 'get',
+          headers: { neverCancel: true, },
+          params: { dictCode: code, },
+        })
+          .then(({ success, data }) => {
+            if (success) {
+              return {
+                success,
+                data,
+                code
+              }
+            }
+            return { success }
+          })
+      }))
+    .then(res => {
+      const newDict = res.reduce((pre, { success, data, code }) => {
+        if (success) return { ...pre, [code]: data }
+        return pre
+      }, {})
+      setDict(dict => ({ ...dict, ...newDict }))
+    })
+    .finally(() => setLoading(false))
+}
+export const useDict = (codes = []) => {
+  const [dict, setDict] = useState({});
+  const [loading, setLoading] = useState(false);
+  const load = useCallback((cs = codes) => reqDict({ codes: cs, setDict, setLoading }), [codes]);
+
+  useDeepCompareEffect(() => {
+    reqDict({ codes, setDict, setLoading })
+  }, [codes])
+
+  return { dict, load, loading }
+}
+
+/**
+ * @description: 获取字典对应字段
+ * @param {{dataName: string, dataValue: string | number | boolean}[]} options 数组
+ * @param {string | number | boolean} val 对应 dataValue
+ * @return: 返回对应对象的 lable
+ * 
+*/
+export const optionFindLableDict = (options = [], val) => {
+  const obj = options.find(re => re.dataValue === val);
+  const show = obj?.dataName
+  return show
+};
 
 /**
  * @description: 统一时间格式
