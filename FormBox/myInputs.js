@@ -1,5 +1,5 @@
 import React, { forwardRef, useState, useEffect, useRef, useImperativeHandle } from 'react';
-import { Select, TreeSelect, Pagination, Input } from 'antd';
+import { Select, TreeSelect, Pagination, Input, Icon } from 'antd';
 import ReactDom from 'react-dom';
 import { CancelToken } from 'axios'
 import { useUpdateEffect, useCreation } from 'ahooks';
@@ -372,3 +372,236 @@ function renderOptions({
   }
 }
 
+export const MyTableSelect = forwardRef(
+  (
+    {
+      options,
+      onChange = () => null,
+      value,
+      store = null,
+      reader = {
+        label: "dataName",
+        value: "dataValue"
+      },
+      style,
+      optionRender, // 传入 option 自定义样式
+      optionProps = () => ({}),
+      otherLine = [],
+      dataTypeFun = v => v, // 保证返回的数据类型 就行装换
+      cascadeParams = {},
+      pageInfo,
+      searchProperties,
+      ...props
+    },
+    ref,
+  ) => {
+
+    const [lodaing, setLoading] = useState(false);
+    const [reqOptions, setReqOptions] = useState([]);
+    const [params, setParams] = useState(cascadeParams);
+    const [v, setV] = useState(undefined);
+    const [total, setTotal] = useState(0);
+    const [current, setCurrent] = useState(1);
+    const [open, setOpen] = useState(false);
+    const [searchVal, setSearchVal] = useState('');
+    const pageInfoObj = typeof pageInfo === "object" ? { rows: 30, ...pageInfo } : { rows: 30 }
+    const selectRef = useRef();
+    const pageRef = useRef();
+    const searchRef = useRef();
+    const flagReq = useCreation(() => ({ cancel: null }))
+
+    useImperativeHandle(ref, () => ({ selectRef }));
+
+    useEffect(() => {
+      document.addEventListener('mousedown', hide, true);
+      return () => document.removeEventListener('mousedown', hide, true);
+    }, [])
+
+    useEffect(() => {
+      setV(value);
+    }, [value]);
+
+    useUpdateEffect(() => {
+      if (!store) return
+      if (cascadeParams === params) {
+        // 第一次进入数据一样
+        getData(cascadeParams)
+        return
+      }
+
+      // 深度比较对象
+      const flag = comparisonObject(cascadeParams, params);
+      if (!flag) {
+        setParams(cascadeParams);
+        getData(cascadeParams);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cascadeParams])
+
+    useEffect(() => {
+      getData()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [current, searchVal])
+
+    function getData(params = cascadeParams) {
+      if (!store) return
+      let searchObj = {}
+      if (searchProperties) searchObj = { quickSearchProperties: searchProperties, quickSearchValue: searchVal, }
+      setLoading(true);
+      request({
+        ...store,
+        ...params,
+
+        // data数据
+        data: {
+          // 分页参数
+          pageInfo: pageInfo ? { ...pageInfoObj, page: current, } : undefined,
+          // 其他参数
+          ...(params?.data || {}), ...(store?.data || {}),
+          ...searchObj,
+        },
+
+        // 自己取消请求
+        // headers: { neverCancel: true },
+        cancelToken: new CancelToken(cancelFn => {
+          if (flagReq.cancel) flagReq.cancel('cancel')
+          flagReq.cancel = cancelFn
+        })
+      })
+        .then(({ data, success }) => {
+          if (!success) return
+          let optitons = []
+          if (Array.isArray(data)) {
+            optitons = data
+          } else if (Array.isArray(data?.rows)) {
+            setCurrent(data.page);
+            setTotal(data.records);
+            optitons = data?.rows
+          }
+          setReqOptions(optitons.map(res => {
+            return {
+              value: res[reader.value],
+              label: res[reader.label],
+              data: res,
+            };
+          }));
+        })
+        .finally(() => setLoading(false));
+    }
+
+    const onChangePage = (page) => {
+      setCurrent(page)
+    }
+
+    function hide(e) {
+      const tDom = ReactDom.findDOMNode(selectRef.current)
+      const pDom = ReactDom.findDOMNode(pageRef.current)
+      const sDom = ReactDom.findDOMNode(searchRef.current)
+
+      if (tDom?.contains(e.target) || pDom?.contains(e.target) || sDom?.contains(e.target)) {
+        // 暂无需求
+      } else {
+        setTimeout(() => {
+          setOpen(false)
+        }, 100)
+      }
+    }
+
+    function show(val) {
+      if (val) {
+        setOpen(val);
+        // 重置搜索框
+        // setSearchVal('');
+      }
+    }
+
+    const option = (item, k) => {
+      if (optionRender) {
+        return (
+          <Option
+            data={item.data}
+            key={`${k}-${item.value}`}
+            value={dataTypeFun(item.value)}
+            label={item.label}
+            {...(optionProps(item))}
+          >
+            {optionRender(item)}
+          </Option>
+        );
+      }
+      return (
+        <Option
+          data={item.data}
+          key={`${k}-${item.value}`}
+          value={dataTypeFun(item.value)}
+          label={item.label}
+          {...(optionProps(item))}
+        >
+          {item.label}
+        </Option>
+      );
+    };
+
+    const searchMode = (pageInfo || searchProperties) ? {
+      open,
+      onDropdownVisibleChange: show
+    } : {}
+    const opt = options || reqOptions;
+    return (
+      <Select
+        {...searchMode}
+        loading={lodaing}
+        remotePaging
+        style={style}
+        // 搜索
+        showSearch
+        optionFilterProp='label'
+        {...props}
+        onChange={(val, datas) => {
+          const data = datas && datas.props && datas.props.data;
+          onChange(val, data);
+          setV(val);
+        }}
+        // onKeyDown={keyDown}
+        // onSelect={() => setOpen(false)}
+        // onMouseDown={e => e.preventDefault()}
+        ref={selectRef}
+        value={v}
+        dropdownRender={menu => (
+          <div>
+            {
+              searchProperties
+              && store
+              && <div
+                style={{ padding: "8px 8px 0 8px", display: "flex", justifyContent: "center", alignItems: "center", borderTop: "1px solid rgb(222, 222, 222)" }}
+                ref={searchRef}
+              >
+                <Search onSearch={(val) => setSearchVal(val)} />
+              </div>
+            }
+            {menu}
+            {
+              pageInfo
+              && <div
+                style={{ height: "42px", display: "flex", justifyContent: "center", alignItems: "center", borderTop: "1px solid rgb(222, 222, 222)" }}
+                ref={pageRef}
+              >
+                <Pagination
+                  simple
+                  disabled={lodaing}
+                  current={current}
+                  total={total}
+                  pageSize={pageInfoObj.rows}
+                  onChange={onChangePage}
+                />
+              </div>
+            }
+          </div>
+        )}
+      >
+        {otherLine.map(option)}
+        {opt && opt.length ? [...(props?.defaultDataArr || []), ...opt,].map(option) : [...(props?.defaultDataArr || [])].map(option)}
+      </Select>
+    );
+  },
+);
