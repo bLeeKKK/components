@@ -240,7 +240,7 @@ export const useDict = (codes = []) => {
 */
 export const optionFindLableDict = (options = [], val) => {
   const obj = options.find(re => re.dataValue === val);
-  const show = obj?.dataName
+  const show = obj?.dataName || val
   return show
 };
 
