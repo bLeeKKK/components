@@ -7,8 +7,6 @@ import constants, { SEI_COMMONS_DATA } from '@/utils/constants';
 
 const { SERVER_PATH } = constants;
 
-// `${SERVER_PATH}/${SEI_COMMONS_DATA}/dataDict/getCanUseDataDictValues?dictCode=CUSTOMER-TYPE`,
-
 /**
  * @description: 所有表单组件【selectUserByOrz】的必选校验
  * SELECTUSERBYORZ_REQUIRED_RULE
@@ -28,6 +26,7 @@ export const selectUserByOrzRequiredRule = (message = '请选择变更负责人'
 /**
  * @description: 统一时间格式的展示
  * @param {date} date 对应 时间日期
+ * 
  * @return: 返回处理好的时间格式
  * 
 */
@@ -37,6 +36,7 @@ export const rowShowTime = (date, format = 'YYYY-MM-DD HH:mm:ss') => date ? mome
  * @description: 找到配置项中的对应value值
  * @param {{label: string, value: string | number | boolean}[]} options 数组
  * @param {string | number | boolean} val 对应 value
+ * 
  * @return: 返回对应对象的 lable
  * 
 */
@@ -174,6 +174,9 @@ export const useClientHeight = (ref = {}) => {
 
 /**
  * @description: 获取上一个状态
+ * @param {any} value
+ * 
+ * @return {any} 上一个状态
 */
 export const usePrevious = (value) => {
   const ref = useRef()
@@ -184,9 +187,11 @@ export const usePrevious = (value) => {
 }
 
 /**
- * @description: 获取字典数据
+ * @description: 根据codes，获取字典数据并处理
+ * @param {Array} codes 字典code数组
+ * @param {Function} setDict 设置字典数据的函数
+ * @param {Function} setLoading 设置loading的函数
 */
-// 循环请求字典详情，并设置
 function reqDict({ codes, setDict, setLoading }) {
   setLoading(true)
   Promise
@@ -219,6 +224,13 @@ function reqDict({ codes, setDict, setLoading }) {
     })
     .finally(() => setLoading(false))
 }
+
+/**
+ * @description: 自定义hooks，获取字典数据
+ * @param {Array} codes 字典code数组
+ * 
+ * @return {Object} {dict: 字典数据, load: 重新获取字典数据的函数, loading: 是否正在加载}
+*/
 export const useDict = (codes = []) => {
   const [dict, setDict] = useState({});
   const [loading, setLoading] = useState(false);
@@ -273,6 +285,10 @@ export const downloadBlobFile = (data, name) => {
 
 /**
   * @description: 返回对相应的数据类型
+  * 
+  * @param {*} data
+  * 
+  * @return {string} 返回对应的数据类型
   */
 function getType(data) {
   return Object.prototype.toString.call(data).substring(8).split(/]/)[0]
@@ -323,8 +339,10 @@ export function comparisonObject(sourceObj, compareObj) {
 }
 
 /**
- *  @description: 获取弹窗模式
+ * @description: 获取弹窗模式
  * @param {number} editType 模式 1:新增 2:编辑 3:查看
+ * 
+ * @return: 返回对应的模式
 */
 export function getModel(editType) {
   switch (editType) {

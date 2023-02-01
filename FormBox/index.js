@@ -69,6 +69,26 @@ const getValue = (obj, key) => {
   return value;
 };
 
+/**
+ * 表单组件
+ * @param {object} form 表单对象
+ * @param {array} formItems 表单项
+ * @param {number} span 表单项宽度
+ * @param {object} styleItem 表单项样式
+ * @param {object} styleBox 表单样式
+ * @param {object} FormItemProps 表单项属性
+ * @param {boolean} outLineHeight 是否显示行高
+ * @param {boolean} showErr 是否显示错误
+ * @param {boolean} noBorder 是否显示边框
+ * @param {boolean} noBottomMargin 是否显示底部边距
+ * @param {object} rowProps 行属性
+ * @param {object} showObj 显示对象
+ * @param {boolean} justShow 是否只显示
+ * @param {object} formLayout 表单布局
+ * @param {object} ref
+ * @returns {*}
+ * 
+ * */ 
 const FormBox = forwardRef(
   (
     {
