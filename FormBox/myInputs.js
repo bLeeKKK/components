@@ -27,7 +27,7 @@ const { Search } = Input;
  * @param {Object} searchProperties 搜索参数
  * @param {Object} props 其他参数
  * 
- * */ 
+ * */
 export const MySelect = forwardRef(
   (
     {
@@ -405,7 +405,7 @@ function renderOptions({
  * @param {Function} afterSelect 选择后的回调
  * @param {number} dropdownHeight 下拉框高度
  * @param {number} dropdownWidth 下拉框宽度
- * @param {Object} props 其他参数 适用到 <Select /> 组件上
+ * @param {Object} props 其他参数，适用到Select组件上
  * 
  * 现在必须使用接口请求数据，也就是store必传。后续有需求再改
  * 
@@ -425,8 +425,9 @@ export const MyTableSelect = forwardRef(
         value: 'id',
       },
       afterSelect = () => { },
-      dropdownHeight = 500,
-      dropdownWidth = 400,
+      afterClear = () => { },
+      // dropdownHeight = 500,
+      // dropdownWidth = 400,
       ...props
     },
     ref,
@@ -470,11 +471,7 @@ export const MyTableSelect = forwardRef(
     const [v, setV] = useControllableValue(props, { defaultValue: [] });
 
     const handleSelectedRows = (...parameter) => {
-      afterSelect(...parameter);
       setV(parameter[0]);
-      form.setFieldsValue({
-        [name]: parameter[0],
-      });
       if (mode !== 'checkbox') {
         setOpen(false);
       }
@@ -495,15 +492,15 @@ export const MyTableSelect = forwardRef(
         </Option>
       );
     };
-    const selectRow = (record) => {
-      const selectedRowKeys = [...v];
-      if (selectedRowKeys.indexOf(record[reader.value]) >= 0) {
-        selectedRowKeys.splice(selectedRowKeys.indexOf(record[reader.value]), 1);
-      } else {
-        selectedRowKeys.push(record[reader.value]);
-      }
-      setV(selectedRowKeys)
-    }
+    // const selectRow = (record) => {
+    //   const selectedRowKeys = [...v];
+    //   if (selectedRowKeys.indexOf(record[reader.value]) >= 0) {
+    //     selectedRowKeys.splice(selectedRowKeys.indexOf(record[reader.value]), 1);
+    //   } else {
+    //     selectedRowKeys.push(record[reader.value]);
+    //   }
+    //   setV(selectedRowKeys)
+    // }
 
     useEffect(() => {
       if (open && searchVal !== '') setSearchVal('');
@@ -513,7 +510,7 @@ export const MyTableSelect = forwardRef(
       } else {
         setV(val);
       }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
     return (
@@ -539,6 +536,7 @@ export const MyTableSelect = forwardRef(
             type="close"
             onClick={e => {
               handleSelectedRows([]);
+              afterClear([], [])
               e.stopPropagation();
             }}
           />
@@ -549,21 +547,25 @@ export const MyTableSelect = forwardRef(
               {open && (
                 <div onMouseDown={e => e.preventDefault()}>
                   <Table
-                    scroll={{ x: dropdownWidth, y: dropdownHeight }}
+                    // scroll={{ x: dropdownWidth, y: dropdownHeight }}
                     columns={columns}
                     rowKey={(item, index) => item[reader.value] || `数据报错-${index}`}
                     rowSelection={{
                       type: mode,
                       selectedRowKeys: v,
-                      onChange: (...p) => handleSelectedRows(...p)
+                      onChange: (...p) => {
+                        console.log(p)
+                        afterSelect(...p);
+                        handleSelectedRows(...p)
+                      }
                     }}
                     size="small"
                     bordered
-                    onRow={(record) => ({
-                      onClick: () => {
-                        selectRow(record);
-                      },
-                    })}
+                    // onRow={(record) => ({
+                    //   onClick: () => {
+                    //     selectRow(record);
+                    //   },
+                    // })}
                     {...tableProps}
                   />
                 </div>
