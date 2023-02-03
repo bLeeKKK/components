@@ -1,6 +1,6 @@
 import React, { useImperativeHandle, forwardRef } from 'react';
 import { Form, Input, Table } from 'antd';
-import FormBox, { Combos } from '@/components/FormBox';
+import FormBox, { Combos, packageData } from '@/components/FormBox';
 
 function EditableRow(props) {
   const { ...restProps } = props;
@@ -61,7 +61,7 @@ function renderInput({ iteminput, form, rowkey, record, intorow = false, dataInd
         record={record}
         allowClear
         form={form}
-        name={`${iteminput.key}_${iteminput.type}`}
+        name={`${name}.${iteminput.key}_${iteminput.type}`}
         style={{ width: '100%' }}
         {...iteminput.props}
         onChange={newOnchange}
@@ -76,7 +76,7 @@ function renderInput({ iteminput, form, rowkey, record, intorow = false, dataInd
         record={record}
         form={form}
         style={{ width: '100%' }}
-        name={`${iteminput.key}_${iteminput.type}`}
+        name={`${name}.${iteminput.key}`}
         {...iteminput.props}
         onChange={newOnchange}
       />,
@@ -103,9 +103,24 @@ const FormTable = forwardRef(({
 }, ref) => {
   // 暂支持请求数据分页
 
-  useImperativeHandle(ref, () => {
-    return form;
-  });
+  const getDataSourceMergeForm = ({ packageOptions = {} } = {}) => {
+    const newDataSource = JSON.parse(JSON.stringify(dataSource));
+    const tableValueMap = form.getFieldsValue();
+    const arr = newDataSource
+      .map(res => {
+        const item = tableValueMap[res.id]
+        if (item) {
+          return {
+            ...res,
+            ...packageData({ vals: item, ...packageOptions }),
+          }
+        }
+        return res
+      })
+    return arr
+  }
+
+  useImperativeHandle(ref, () => ({ form, getDataSourceMergeForm }));
 
 
   const newColumns = columns
@@ -194,9 +209,9 @@ const FormCom = Form.create({
 
 const WForm = forwardRef(({ form, ...props }, ref) => {
   if (form) {
-    return <FormTable form={form} {...props} ref={ref} />;
+    return <FormTable {...props} form={form} ref={ref} />;
   }
-  return <FormCom {...props} ref={ref} />;
+  return <FormCom {...props} wrappedComponentRef={ref} />;
 });
 
 export default WForm;
