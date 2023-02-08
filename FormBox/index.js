@@ -13,7 +13,7 @@ import {
 } from 'antd';
 import momentFn from 'moment';
 import { ComboGrid, ComboList, ComboTree, MoneyInput } from '@sei/suid';
-import { MySelect, MyTreeSelect } from './myInputs';
+import { MySelect, MyTreeSelect, MyTableSelect } from './myInputs';
 import Place from './Place';
 import SelectUserByOrz from './SelectUserByOrz';
 
@@ -48,9 +48,7 @@ export const Combos = {
   select: MySelect, // 单选
   // selectMultiple: MixinSelectMultiple, // 多选
   treeSelect: MyTreeSelect, // 树状选中
-  // // tableRadio: MixinTable, // (props) => <MixinTable mode="radio" {...props} />, // 表格选择
-  // tableCheck: MixinTable, // (props) => <MixinTable mode="checkbox" {...props} />, // 表格选择
-  // // table: MixinTable,
+  tableCheck: MyTableSelect, // 表格选择
   // rangePickerMonth: RangePickerMonth,
   place: Place, // 地址选择
   selectUserByOrz: SelectUserByOrz, // 地址选择
@@ -71,6 +69,26 @@ const getValue = (obj, key) => {
   return value;
 };
 
+/**
+ * 表单组件
+ * @param {object} form 表单对象
+ * @param {array} formItems 表单项
+ * @param {number} span 表单项宽度
+ * @param {object} styleItem 表单项样式
+ * @param {object} styleBox 表单样式
+ * @param {object} FormItemProps 表单项属性
+ * @param {boolean} outLineHeight 是否显示行高
+ * @param {boolean} showErr 是否显示错误
+ * @param {boolean} noBorder 是否显示边框
+ * @param {boolean} noBottomMargin 是否显示底部边距
+ * @param {object} rowProps 行属性
+ * @param {object} showObj 显示对象
+ * @param {boolean} justShow 是否只显示
+ * @param {object} formLayout 表单布局
+ * @param {object} ref
+ * @returns {*}
+ * 
+ * */ 
 const FormBox = forwardRef(
   (
     {
@@ -169,7 +187,7 @@ const FormBox = forwardRef(
         <Row {...(rowProps || {})}>
           {formItems.map((item, index) => {
             // afterSelect代理
-            let afterSelect = () => {};
+            let afterSelect = () => { };
             if (item?.props?.afterSelect) {
               afterSelect = item.props.afterSelect;
             }
@@ -183,7 +201,7 @@ const FormBox = forwardRef(
             // afterSelect代理
 
             // afterClear代理
-            let afterClear = () => {};
+            let afterClear = () => { };
             if (item?.props?.afterClear) {
               afterClear = item.props.afterClear;
             }
@@ -205,9 +223,8 @@ const FormBox = forwardRef(
                 {...(item.propCol || {})}
               >
                 <Form.Item
-                  className={`${outLineHeight ? 'out-line-height' : ''} ${
-                    showErr ? 'show-err-box' : ''
-                  } ${noBorder ? 'no-border' : ''} ${noBottomMargin ? 'no-bottom-margin' : ''}`}
+                  className={`${outLineHeight ? 'out-line-height' : ''} ${showErr ? 'show-err-box' : ''
+                    } ${noBorder ? 'no-border' : ''} ${noBottomMargin ? 'no-bottom-margin' : ''}`}
                   label={item.title}
                   {...(item.formLayouts ? item.formLayouts : formLayout)}
                   {...FormItemProps}

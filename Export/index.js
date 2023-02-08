@@ -56,7 +56,7 @@ const Export = forwardRef(({
                   downloadBlobFile(
                     data,
                     decodeURI(headers['content-disposition'].split("''")[1])
-                    || `${exportName || '文件' + moment().format("YYYYMMDDHHmmss")}.xlsx`
+                    || `${exportName || `文件${  moment().format("YYYYMMDDHHmmss")}`}.xlsx`
                   )
                 } else {
                   message.error(msg)

@@ -1,8 +1,8 @@
 import React, { forwardRef, useState, useEffect, useRef, useImperativeHandle } from 'react';
-import { Select, TreeSelect, Pagination, Input } from 'antd';
+import { Select, TreeSelect, Pagination, Input, Icon, Table } from 'antd';
 import ReactDom from 'react-dom';
-import { CancelToken } from 'axios'
-import { useUpdateEffect, useCreation } from 'ahooks';
+import { CancelToken } from 'axios';
+import { useUpdateEffect, useCreation, useControllableValue, useAntdTable, useDebounce } from 'ahooks';
 import { request } from '@/utils';
 import { comparisonObject } from '../utils';
 
@@ -10,6 +10,24 @@ const { Option } = Select;
 const { TreeNode } = TreeSelect;
 const { Search } = Input;
 
+/**
+ * @description 自定义下拉框
+ * @param {Array} options 传入的数据
+ * @param {Function} onChange 选择后的回调
+ * @param {String} value 选中的值
+ * @param {Object} store 请求的数据
+ * @param {Object} reader 读取数据的字段
+ * @param {Object} style 样式
+ * @param {Function} optionRender 自定义 option 样式
+ * @param {Function} optionProps 自定义 option 属性
+ * @param {Array} otherLine 其他行，用于自定义写死的数据
+ * @param {Function} dataTypeFun 保证返回的数据类型 就行装换
+ * @param {Object} cascadeParams 级联参数
+ * @param {Object} pageInfo 分页参数
+ * @param {Object} searchProperties 搜索参数
+ * @param {Object} props 其他参数
+ * 
+ * */
 export const MySelect = forwardRef(
   (
     {
@@ -81,21 +99,21 @@ export const MySelect = forwardRef(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [current, searchVal])
 
-    function getData(params = cascadeParams) {
+    function getData(p = cascadeParams) {
       if (!store) return
       let searchObj = {}
       if (searchProperties) searchObj = { quickSearchProperties: searchProperties, quickSearchValue: searchVal, }
       setLoading(true);
       request({
         ...store,
-        ...params,
+        ...p,
 
         // data数据
         data: {
           // 分页参数
           pageInfo: pageInfo ? { ...pageInfoObj, page: current, } : undefined,
           // 其他参数
-          ...(params?.data || {}), ...(store?.data || {}),
+          ...(p?.data || {}), ...(store?.data || {}),
           ...searchObj,
         },
 
@@ -294,10 +312,10 @@ export const MyTreeSelect = forwardRef((
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store])
 
-  function getData(params = {}) {
+  function getData(p = {}) {
     request({
       ...store,
-      ...params,
+      ...p,
     })
       .then(({ success, data }) => {
         if (success) {
@@ -357,6 +375,7 @@ function renderOptions({
         value={res[reader.value]}
         title={title}
         key={res[reader.value]}
+        // eslint-disable-next-line react/no-children-prop
         children={
           renderOptions({
             options: res[childrenStr],
@@ -372,3 +391,358 @@ function renderOptions({
   }
 }
 
+
+/**
+ * @description: 表格选择
+ * @param {{ url: string, method: "POST" | "GET", data: Object }} store 外部传如列表
+ * @param {Array} columns 表格列
+ * @param {string} name 表单name
+ * @param {Form} form 表单
+ * @param {Object} style 样式
+ * @param {string} mode 多选还是单选 checkbox | radio
+ * @param {Function} optionRender 自定义渲染
+ * @param {Object} reader 读取器
+ * @param {Function} afterSelect 选择后的回调
+ * @param {number} dropdownHeight 下拉框高度
+ * @param {number} dropdownWidth 下拉框宽度
+ * @param {Object} props 其他参数，适用到Select组件上
+ * 
+ * 现在必须使用接口请求数据，也就是store必传。后续有需求再改
+ * 
+*/
+export const MyTableSelect = forwardRef(
+  (
+    {
+      store = {},
+      columns = [],
+      name,
+      form = {},
+      style,
+      mode = 'checkbox',
+      optionRender,
+      reader = {
+        label: 'name',
+        value: 'id',
+      },
+      afterSelect = () => { },
+      afterClear = () => { },
+      // dropdownHeight = 500,
+      // dropdownWidth = 400,
+      ...props
+    },
+    ref,
+  ) => {
+    const flagReq = useCreation(() => ({ cancel: null }))
+    const [searchVal, setSearchVal] = useState('');
+    const debouncedSearchVal = useDebounce(searchVal, { wait: 600 });
+    const { tableProps } = useAntdTable(
+      ({ current, pageSize }) => {
+        return request({
+          ...store,
+          data: {
+            quickSearchValue: debouncedSearchVal,
+            pageInfo: { page: current, rows: pageSize },
+            ...(store?.data || {}),
+          },
+
+          // 自己取消请求
+          cancelToken: new CancelToken(cancelFn => {
+            if (flagReq.cancel) flagReq.cancel('cancel')
+            flagReq.cancel = cancelFn
+          })
+        })
+          .then(({ success, data }) => {
+            if (success) {
+              return {
+                total: data.records,
+                list: data.rows
+              }
+            }
+            return { total: 0, list: [] }
+          });
+      },
+      {
+        refreshDeps: [debouncedSearchVal],
+        defaultPageSize: 10
+      }
+    );
+    const { dataSource } = tableProps
+    const [open, setOpen] = useState(false);
+    const [v, setV] = useControllableValue(props, { defaultValue: [] });
+
+    const handleSelectedRows = (...parameter) => {
+      setV(parameter[0]);
+      if (mode !== 'checkbox') {
+        setOpen(false);
+      }
+    }
+    const option = (item) => {
+      const label = item[reader.label]
+      const value = item[reader.value]
+      if (optionRender) {
+        return (
+          <Option data={item} value={value} key={value}>
+            {optionRender(item)}
+          </Option>
+        );
+      }
+      return (
+        <Option data={item} value={value} key={value}>
+          {label}
+        </Option>
+      );
+    };
+    // const selectRow = (record) => {
+    //   const selectedRowKeys = [...v];
+    //   if (selectedRowKeys.indexOf(record[reader.value]) >= 0) {
+    //     selectedRowKeys.splice(selectedRowKeys.indexOf(record[reader.value]), 1);
+    //   } else {
+    //     selectedRowKeys.push(record[reader.value]);
+    //   }
+    //   setV(selectedRowKeys)
+    // }
+
+    useEffect(() => {
+      if (open && searchVal !== '') setSearchVal('');
+      const val = form.getFieldValue(name);
+      if (!val) {
+        setV([]);
+      } else {
+        setV(val);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open]);
+
+    return (
+      <Select
+        ref={ref}
+        onSearch={sv => setSearchVal(sv)}
+        showSearch
+        autoClearSearchValue
+        open={open}
+        mode={mode === 'checkbox' ? 'multiple' : 'tag'}
+        onDropdownVisibleChange={setOpen}
+        value={v}
+        placeholder="Select"
+        dropdownMatchSelectWidth={false}
+        onDeselect={val => {
+          const newV = [...v];
+          const index = newV.findIndex(res => res === val);
+          newV.splice(index, 1);
+          handleSelectedRows(newV);
+        }}
+        clearIcon={
+          <Icon
+            type="close"
+            onClick={e => {
+              handleSelectedRows([]);
+              afterClear([], [])
+              e.stopPropagation();
+            }}
+          />
+        }
+        dropdownRender={() => {
+          return (
+            <div>
+              {open && (
+                <div onMouseDown={e => e.preventDefault()}>
+                  <Table
+                    // scroll={{ x: dropdownWidth, y: dropdownHeight }}
+                    columns={columns}
+                    rowKey={(item, index) => item[reader.value] || `数据报错-${index}`}
+                    rowSelection={{
+                      type: mode,
+                      selectedRowKeys: v,
+                      onChange: (...p) => {
+                        console.log(p)
+                        afterSelect(...p);
+                        handleSelectedRows(...p)
+                      }
+                    }}
+                    size="small"
+                    bordered
+                    // onRow={(record) => ({
+                    //   onClick: () => {
+                    //     selectRow(record);
+                    //   },
+                    // })}
+                    {...tableProps}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        }}
+        {...props}
+        style={style}
+      >
+        {dataSource.map(option)}
+      </Select >
+    );
+  },
+);
+
+// MyTableSelect 的备用组件
+// export const MyTableSelect2 = forwardRef(
+//   (
+//     {
+//       store = {},
+//       columns = [],
+//       name,
+//       form = {},
+//       style,
+//       mode = 'checkbox',
+//       optionRender,
+//       reader = {
+//         label: 'name',
+//         value: 'id',
+//       },
+//       afterSelect = () => { },
+//       // onChange = () => { },
+//       height = 500,
+//       ...props
+//     },
+//     ref,
+//   ) => {
+//     const [open, setOpen] = useState(false);
+//     const [opinData, setOpinData] = useState([]);
+//     const [v, setV] = useControllableValue(props, { defaultValue: [] });
+//     const tableRef = useRef(null);
+//     const [searchVal, setSearchVal] = useState('');
+
+//     const handleSelectedRows = (...parameter) => {
+//       afterSelect(...parameter);
+//       setV(parameter[0]);
+//       form.setFieldsValue({
+//         [name]: parameter[0],
+//       });
+//       if (mode !== 'checkbox') {
+//         setOpen(false);
+//       }
+//     }
+
+//     const { run: handleSearch } = useThrottleFn(
+//       (vals) => {
+//         setSearchVal(vals);
+//         if (tableRef.current) tableRef.current.remoteDataRefresh();
+//       },
+//       { wait: 600 },
+//     );
+
+//     useEffect(() => {
+//       if (open && searchVal !== '') handleSearch('');
+//       const val = form.getFieldValue(name);
+//       if (!val) {
+//         setV([]);
+//       } else {
+//         setV(val);
+//       }
+//     }, [open]);
+
+//     const { params = {} } = store;
+
+//     const option = (item) => {
+//       if (optionRender) {
+//         return (
+//           <Option data={item.data} value={item.value} key={item.value}>
+//             {optionRender(item)}
+//           </Option>
+//         );
+//       }
+//       return (
+//         <Option data={item.data} value={item.value} key={item.value}>
+//           {item.label}
+//         </Option>
+//       );
+//     };
+
+//     return (
+//       <Select
+//         ref={ref}
+//         onSearch={sv => handleSearch(sv)}
+//         showSearch
+//         autoClearSearchValue
+//         open={open}
+//         mode={mode === 'checkbox' ? 'multiple' : 'tag'}
+//         onDropdownVisibleChange={setOpen}
+//         value={v}
+//         placeholder="Select"
+//         dropdownMatchSelectWidth={false}
+//         onDeselect={val => {
+//           const newV = [...v];
+//           const index = newV.findIndex(res => res === val);
+//           newV.splice(index, 1);
+//           handleSelectedRows(newV);
+//         }}
+//         clearIcon={
+//           <Icon
+//             type="close"
+//             onClick={e => {
+//               handleSelectedRows([]);
+//               e.stopPropagation();
+//             }}
+//           />
+//         }
+//         dropdownRender={() => {
+//           return (
+//             <div>
+//               {open && (
+//                 <div onMouseDown={e => e.preventDefault()}>
+//                   <ExtTable
+//                     ref={tableRef}
+//                     columns={columns}
+//                     showSearch={false}
+//                     rowKey={(item, index) => {
+//                       return item[reader.value] || `数据报错-${index}`
+//                     }}
+//                     allowCancelSelect
+//                     bordered
+//                     size="small"
+//                     height={height}
+//                     remotePaging
+//                     ellipsis={false}
+//                     selectedRowKeys={v}
+//                     lineNumber={false}
+//                     onSelectRow={handleSelectedRows}
+//                     checkbox={
+//                       mode === 'checkbox' || {
+//                         checkType: 'radio',
+//                         multiSelect: false,
+//                       }
+//                     }
+//                     // showSearch={true}
+//                     pagination={{ showSizeChanger: false }}
+//                     store={{
+//                       ...store,
+//                       params: { quickSearchValue: searchVal, ...params },
+//                       loaded: (re) => {
+//                         const { data: { rows = [] } } = re;
+//                         if (store && store.callback) store.callback(re, form);
+//                         setOpinData(
+//                           rows.map(res => {
+//                             return {
+//                               value: res[reader.value],
+//                               label: res[reader.label],
+//                               data: res,
+//                             };
+//                           }),
+//                         );
+//                       },
+//                     }}
+//                   />
+//                 </div>
+//               )}
+//             </div>
+//           );
+//         }}
+//         {...props}
+//         style={{
+//           // margin: "4px 0",
+//           ...style,
+//         }}
+//       >
+//         {opinData.map(option)}
+//       </Select >
+//     );
+//   },
+// );
