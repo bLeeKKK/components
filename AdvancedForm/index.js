@@ -89,7 +89,7 @@ const AdvancedForm = forwardRef(
     };
 
     const handleResetOut = () => {
-      const Form = refFormOut.form;
+      const Form = refFormOut?.form;
       if (Form) Form.resetFields();
     };
 

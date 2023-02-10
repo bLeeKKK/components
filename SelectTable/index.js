@@ -1,11 +1,14 @@
 import React, { useRef, useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { Button, Modal } from 'antd';
-import { ExtTable } from 'suid';
+import { ExtTable } from '@sei/suid';
 import Header from '@/components/Header';
-import AdvancedForm, { searchDataPackaged } from '@/components/AdvancedForm';
+import AdvancedForm, { } from '@/components/AdvancedForm';
+import { searchDataPackaged } from '@/components/utils';
+
+const defaultfilterFunc = (val) => val;
 
 const SelectTable = forwardRef(({
-  setData = function () { },
+  setData = () => { },
   children,
   searchParam,
   rangePickerRype = "rangePicker_type_list",
@@ -19,9 +22,10 @@ const SelectTable = forwardRef(({
   selectByBtn = false,
   multiSelect = false,
   checkboxProps = {},
-  quickSearchProperties
+  quickSearchProperties = ['code', 'name'],
+  filterFunc = defaultfilterFunc
 }, ref) => {
-  let newSearchParam = searchParam || {};
+  const newSearchParam = searchParam || {};
   const tableRef = useRef();
   const selectAdvancedRef = useRef();
   const [visible, setVisible] = useState(false);
@@ -34,30 +38,33 @@ const SelectTable = forwardRef(({
 
   useEffect(() => {
     if (!visible) {
-      setSearchValue({
+      setSearchValue((state) => ({
+        ...state,
         filters: searchDataPackaged(newSearchParam),
-        quickSearchProperties,
-      })
+      }))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   useEffect(() => {
-    setSearchValue({
+    setSearchValue(state => ({
+      ...state,
       filters: searchDataPackaged(newSearchParam),
-      quickSearchProperties
-    })
+    }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParam])
-
-  useImperativeHandle(ref, () => {
-    return {
-      opan
-    };
-  });
 
   function onSelectRow(rowKeys, rows) {
     setSelectedRowKeys(rowKeys);
     setSelected(rows)
   }
+
+  useImperativeHandle(ref, () => {
+    return {
+      open,
+      onSelectRow
+    };
+  });
 
   const options = {
     columns: !!selectByBtn ? [
@@ -71,7 +78,7 @@ const SelectTable = forwardRef(({
             onClick={
               () => {
                 setData(r)
-                opan(false)
+                open(false)
               }
             }
           >{selectByBtn}</Button>
@@ -101,11 +108,8 @@ const SelectTable = forwardRef(({
 
   function handleTableData(inVals, { value_search: valueSearch, ...outVal } = {}) {
 
-    const filters = searchDataPackaged({
-      ...inVals,
-      ...outVal,
-      ...newSearchParam,
-    }, rangePickerRype);
+    const filterVals = filterFunc({ ...inVals, ...outVal, ...newSearchParam, });
+    const filters = searchDataPackaged(filterVals, rangePickerRype);
 
     setSearchValue({
       ...searchValue,
@@ -124,10 +128,10 @@ const SelectTable = forwardRef(({
     } else {
       setData(selected[0])
     }
-    opan(false)
+    open(false)
   }
 
-  function opan(flag = true) {
+  function open(flag = true) {
     setVisible(flag)
     if (!flag) {
       onSelectRow([], [])
@@ -140,14 +144,14 @@ const SelectTable = forwardRef(({
       <Modal
         title={title}
         visible={visible}
-        width={'80%'}
+        width='80%'
         style={{ top: 80 }}
         bodyStyle={{ overflow: 'auto' }}
         maskClosable={false}
-        destroyOnClose={true}
+        destroyOnClose
         onOk={onOk}
-        onCancel={() => opan(false)}
-        forceRender={true}
+        onCancel={() => open(false)}
+        forceRender
         {...modalProps}
       >
         <header>

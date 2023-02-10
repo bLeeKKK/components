@@ -16,7 +16,7 @@ const IconsBox = ({ btnIconArr = [], limt }) => {
   const beforArr = arr.splice(0, len);
 
   const resRender = (res, index) => {
-    let { render, loading = false, ...resProps } = res;
+    const { render, wrap, loading = false, ...resProps } = res;
     const ider = index === 0 ? '' : <Divider type="vertical" />
     const IconDom = <>
       {ider}
@@ -27,40 +27,14 @@ const IconsBox = ({ btnIconArr = [], limt }) => {
       key={`${res.key}`}
     >
       {IconDom}
-    </span>) : <ExtIcon style={IconStyle} {...resProps} hide={undefined} antd />;
+    </span>) : IconDom;
 
-    return render ? render(res, index, IconDomA, ider) : IconDomA
+    const showDom = render ? render(res, index, IconDomA, ider) : IconDomA
+    return wrap ? wrap(showDom, 'icon') : showDom
   };
 
   const resRenderMenuItem = (res, index) => {
-    let { render, loading = false, ...resProps } = res;
-
-    // const DomA = res.key ? (
-    //   authAction(
-    //     <Menu.Item
-    //       {...resProps}
-    //       hide={undefined}
-    //       ignore={DEVELOPER_ENV}
-    //       key={res.key}
-    //       style={{ textAlign: 'center' }}
-    //       disabled={loading}
-    //     >
-    //       {loading ? <ExtIcon style={IconStyle} type="loading" antd /> : null} {res.tooltip?.title || '请传入标题'}
-    //     </Menu.Item>,
-    //   )
-    // ) : (
-    //   <Menu.Item
-    //     {...resProps}
-    //     hide={undefined}
-    //     key={`${index}-list`}
-    //     style={{ textAlign: 'center' }}
-    //     disabled={loading}
-    //   >
-    //     {loading ? <ExtIcon style={IconStyle} type="loading" antd /> : null} {res.tooltip?.title || '请传入标题'}
-    //   </Menu.Item>
-    // );
-
-    // return render ? render(res, index, DomA) : DomA
+    const { render, wrap, loading = false, ...resProps } = res;
 
     let DomA = <>
       {loading ? <ExtIcon style={IconStyle} type="loading" antd /> : null} {res.tooltip?.title || '请传入标题'}
@@ -77,7 +51,7 @@ const IconsBox = ({ btnIconArr = [], limt }) => {
         style={{ textAlign: 'center' }}
         disabled={loading}
       >
-        {DomA}
+        {wrap ? wrap(DomA, 'menu') : DomA}
       </Menu.Item>,
     ) : <Menu.Item
       {...resProps}
@@ -86,7 +60,7 @@ const IconsBox = ({ btnIconArr = [], limt }) => {
       style={{ textAlign: 'center' }}
       disabled={loading}
     >
-      {DomA}
+      {wrap ? wrap(DomA, 'menu') : DomA}
     </Menu.Item>
   };
 
