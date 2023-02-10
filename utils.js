@@ -26,9 +26,9 @@ export const selectUserByOrzRequiredRule = (message = '请选择变更负责人'
 /**
  * @description: 统一时间格式的展示
  * @param {date} date 对应 时间日期
- * 
+ *
  * @return: 返回处理好的时间格式
- * 
+ *
 */
 export const rowShowTime = (date, format = 'YYYY-MM-DD HH:mm:ss') => date ? moment(date).format(format) : '';
 
@@ -36,9 +36,9 @@ export const rowShowTime = (date, format = 'YYYY-MM-DD HH:mm:ss') => date ? mome
  * @description: 找到配置项中的对应value值
  * @param {{label: string, value: string | number | boolean}[]} options 数组
  * @param {string | number | boolean} val 对应 value
- * 
+ *
  * @return: 返回对应对象的 lable
- * 
+ *
 */
 export const optionFindLable = (options, val) => {
   const obj = options.find(re => re.value === val);
@@ -49,13 +49,13 @@ export const optionFindLable = (options, val) => {
   return show
 };
 
-/** 
+/**
  * @description: 搜索数据打包
  * @method searchDataPackaged
  * @param {Object} obj
  * @param {string} rangePickerMode 将type rangePicker 日期分开打包：list 合并打包: arr
  * @param {boolean} usePlace 是否处理 place 字段
- * 
+ *
  * @return {Array[{ fieldName, operator, value}]}
  */
 export const searchDataPackaged = ({
@@ -154,7 +154,7 @@ export const searchDataPackaged = ({
 /**
  * @description: 自定义hooks，获取元素的高度
  * @param {dom} ref 接收一个dom元素，实时计算它的高度
- * 
+ *
  * @return {number} 返回元素高度
  * */
 export const useClientHeight = (ref = {}) => {
@@ -175,7 +175,7 @@ export const useClientHeight = (ref = {}) => {
 /**
  * @description: 获取上一个状态
  * @param {any} value
- * 
+ *
  * @return {any} 上一个状态
 */
 export const usePrevious = (value) => {
@@ -228,7 +228,7 @@ function reqDict({ codes, setDict, setLoading }) {
 /**
  * @description: 自定义hooks，获取字典数据
  * @param {Array} codes 字典code数组
- * 
+ *
  * @return {Object} {dict: 字典数据, load: 重新获取字典数据的函数, loading: 是否正在加载}
 */
 export const useDict = (codes = []) => {
@@ -248,7 +248,7 @@ export const useDict = (codes = []) => {
  * @param {{dataName: string, dataValue: string | number | boolean}[]} options 数组
  * @param {string | number | boolean} val 对应 dataValue
  * @return: 返回对应对象的 lable
- * 
+ *
 */
 export const optionFindLableDict = (options = [], val) => {
   const obj = options.find(re => re.dataValue === val);
@@ -285,9 +285,9 @@ export const downloadBlobFile = (data, name) => {
 
 /**
   * @description: 返回对相应的数据类型
-  * 
+  *
   * @param {*} data
-  * 
+  *
   * @return {string} 返回对应的数据类型
   */
 function getType(data) {
@@ -297,7 +297,7 @@ function getType(data) {
 /**
  * @param {*} sourceObj
  * @param {*} compareObj
- * 
+ *
  * 比较对象是否相等
  */
 export function comparisonObject(sourceObj, compareObj) {
@@ -341,7 +341,7 @@ export function comparisonObject(sourceObj, compareObj) {
 /**
  * @description: 获取弹窗模式
  * @param {number} editType 模式 1:新增 2:编辑 3:查看
- * 
+ *
  * @return: 返回对应的模式
 */
 export function getModel(editType) {
@@ -356,6 +356,9 @@ export function getModel(editType) {
       return '-'
   }
 }
+
+// 验证是否是数字
+export const validateNumber = (value) => !Number.isNaN(parseFloat(value)) && Number.isFinite(value)
 
 
 // 常用的一些正则表达式

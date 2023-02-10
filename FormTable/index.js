@@ -52,10 +52,14 @@ function renderInput({ iteminput, form, rowkey, record, intorow = false, dataInd
   // 默认为表单带上 record
   if (intorow) getFieldDecorator(`${name}.record`, { initialValue: record })(<Input />);
 
+  const val = record[dataIndex];
+  const initVal = typeof iteminput.props?.initialValue === 'function'
+    ? iteminput.props?.initialValue(val, record)
+    : val || iteminput.props?.initialValue;
   if (iteminput.type) {
     input = getFieldDecorator(`${name}.${iteminput.key}_${iteminput.type}`, {
       rules,
-      initialValue: iteminput.props?.initialValue || record[dataIndex],
+      initialValue: initVal,
     })(
       <Item
         record={record}
@@ -70,7 +74,7 @@ function renderInput({ iteminput, form, rowkey, record, intorow = false, dataInd
   } else {
     input = getFieldDecorator(`${name}.${iteminput.key}`, {
       rules,
-      initialValue: iteminput.props?.initialValue || record[dataIndex],
+      initialValue: initVal,
     })(
       <Input
         record={record}
