@@ -159,11 +159,15 @@ const FormTable = forwardRef(({
     .forEach(res => {
       hideForm
         .forEach(re => {
+          const val = res[re.key]
+          const initVal = typeof re.props?.initialValue === 'function'
+            ? re.props?.initialValue(val, res)
+            : val || re.props?.initialValue;
           newArr.push({
             ...res,
             key: `${res.id}.${re.key}`,
             props: {
-              initialValue: res[re.key],
+              initialValue: initVal,
               ...(re?.props || {}),
             }
           })
