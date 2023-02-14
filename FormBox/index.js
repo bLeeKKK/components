@@ -87,8 +87,8 @@ const getValue = (obj, key) => {
  * @param {object} formLayout 表单布局
  * @param {object} ref
  * @returns {*}
- * 
- * */ 
+ *
+ * */
 const FormBox = forwardRef(
   (
     {
@@ -142,15 +142,17 @@ const FormBox = forwardRef(
       }
       const Item = Combos[item.type] || Input;
       const { initialValue, ...otherProps } = item?.props || {};
+      const nameKey = item.forceKey || `${item.key}${item.type ? `_${item.type}` : ''}`;
+
       if (item.type === 'span') {
-        return getFieldDecorator(`${item.key}_${item.type}`, {
+        return getFieldDecorator(nameKey, {
           initialValue,
         })(<span>{initialValue}</span>);
       }
 
       if (item.type) {
         // 如果存在组件类型type，则直接返回
-        return getFieldDecorator(`${item.key}_${item.type}`, {
+        return getFieldDecorator(nameKey, {
           rules: item.rules || [],
           initialValue,
           ...(item.configItem || {}),
@@ -158,16 +160,16 @@ const FormBox = forwardRef(
           <Item
             allowClear
             form={form}
-            name={`${item.key}_${item.type}`}
+            name={nameKey}
             style={{ width: '100%', ...(item.style || {}) }}
-            field={[`${item.field ? `${item.field}_${item.type}` : item.key}`]}
+            // field={[`${item.field ? `${item.field}_${item.type}` : item.key}`]}
             {...item.props}
           />,
         );
       }
 
       // 不存在type类型返回，普通的input框
-      return getFieldDecorator(`${item.key}`, {
+      return getFieldDecorator(nameKey, {
         rules: item.rules || [],
         initialValue,
         ...(item.configItem || {}),
@@ -175,7 +177,7 @@ const FormBox = forwardRef(
         <Input
           form={form}
           style={{ width: '100%', ...(item.style || {}) }}
-          name={`${item.key}_${item.type}`}
+          name={nameKey}
           // field={[item.key]}
           {...otherProps}
         />,
@@ -187,7 +189,7 @@ const FormBox = forwardRef(
         <Row {...(rowProps || {})}>
           {formItems.map((item, index) => {
             // afterSelect代理
-            let afterSelect = () => { };
+            let afterSelect = () => {};
             if (item?.props?.afterSelect) {
               afterSelect = item.props.afterSelect;
             }
@@ -201,7 +203,7 @@ const FormBox = forwardRef(
             // afterSelect代理
 
             // afterClear代理
-            let afterClear = () => { };
+            let afterClear = () => {};
             if (item?.props?.afterClear) {
               afterClear = item.props.afterClear;
             }
@@ -223,8 +225,9 @@ const FormBox = forwardRef(
                 {...(item.propCol || {})}
               >
                 <Form.Item
-                  className={`${outLineHeight ? 'out-line-height' : ''} ${showErr ? 'show-err-box' : ''
-                    } ${noBorder ? 'no-border' : ''} ${noBottomMargin ? 'no-bottom-margin' : ''}`}
+                  className={`${outLineHeight ? 'out-line-height' : ''} ${
+                    showErr ? 'show-err-box' : ''
+                  } ${noBorder ? 'no-border' : ''} ${noBottomMargin ? 'no-bottom-margin' : ''}`}
                   label={item.title}
                   {...(item.formLayouts ? item.formLayouts : formLayout)}
                   {...FormItemProps}

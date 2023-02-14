@@ -16,9 +16,9 @@ import { useClientHeight } from '../utils';
  * @param {ReactDOM} children
  * @param {Object} props 收集：自定义弹窗属性
  * @return {ReactDOM}
- * 
+ *
  * @example:
-*/
+ */
 const FullModal = ({
   children,
   onCancel,
@@ -30,9 +30,9 @@ const FullModal = ({
   titleDescribe,
   topBtns,
   header = true,
+  okText,
   ...props
 }) => {
-
   const [titleRef, setTitleRef] = useState();
   const offsetHeight = useClientHeight(titleRef);
 
@@ -48,27 +48,33 @@ const FullModal = ({
         {...props}
       >
         <div ref={ref => setTitleRef(ref)}>
-          {
-            header && <div className={styles['title-box']}>
+          {header && (
+            <div className={styles['title-box']}>
               <div className={styles['title-str-box']}>
                 <div className={styles['title-str']}>{titleStr}</div>
                 <div className={styles['title-describe']}>{titleDescribe}</div>
               </div>
               <div>
-                {
-                  topBtns || <>
-                      <Button style={{ marginRight: "8px" }} onClick={onCancel} {...cancelButtonProps}>关闭</Button>
-                      <Button type='primary' onClick={onOk} {...okButtonProps}>保存</Button>
-                    </>
-                }
+                {topBtns || (
+                  <>
+                    <Button
+                      style={{ marginRight: '8px' }}
+                      onClick={onCancel}
+                      {...cancelButtonProps}
+                    >
+                      关闭
+                    </Button>
+                    <Button type="primary" onClick={onOk} {...okButtonProps}>
+                      {okText || '保存'}
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
-          }
+          )}
         </div>
         {/* <div style={{ height: `${offsetHeight}px` }}></div> */}
-        <div style={{ height: `calc(100% - ${offsetHeight}px)` }}>
-          {children}
-        </div>
+        <div style={{ height: `calc(100% - ${offsetHeight}px)` }}>{children}</div>
       </Modal>
     </>
   );

@@ -261,7 +261,11 @@ export default function Import({
         {visibleRecord && (
           <MyTable
             // columns={columns}
-            columns={[{ title: '导入描述', dataIndex: 'remark', width: 500 }]}
+            columns={[
+              { title: '导入描述', dataIndex: 'remark', width: 500 },
+              { title: '导入时间', dataIndex: 'createdDate', width: 180 },
+              { title: '操作人', dataIndex: 'creatorName' },
+            ]}
             showSearch={false}
             rowKey={(item, index) => `${item.errorMessage}-${index}`}
             store={{
