@@ -29,6 +29,7 @@ const AdvancedForm = forwardRef(
   ) => {
     let refForm = form;
     let refFormOut = null;
+
     const [visible, triggerVisible] = useState(false);
     const hide = () => triggerVisible(false);
     const haveFormItem = !!formItems.length;
@@ -90,7 +91,7 @@ const AdvancedForm = forwardRef(
     };
 
     const handleResetOut = () => {
-      const Form = refFormOut?.form;
+      const Form = refFormOut;
       if (Form) Form.resetFields();
     };
 
@@ -113,7 +114,7 @@ const AdvancedForm = forwardRef(
     useImperativeHandle(ref, () => {
       return {
         form: refForm,
-        formOut: refFormOut?.form,
+        formOut: refFormOut,
         handleReset,
         handleResetOut,
         handleSubmit,
@@ -174,7 +175,7 @@ const AdvancedForm = forwardRef(
           {/* 弹出搜索框-end */}
           {outFormItems.length ? (
             <FormBox
-              wrappedComponentRef={f => (refFormOut = f)}
+              wrappedComponentRef={f => (refFormOut = f?.form)}
               // outLineHeight={true}
               formItems={outFormItems}
               // FormItemProps={{ wrapperCol: { span: 24 }, labelCol: { span: 0 } }}
