@@ -9,6 +9,7 @@ import styles from './index.less';
 const AdvancedForm = forwardRef(
   (
     {
+      form,
       formItems = [],
       outFormItems = [],
       onOk = () => null,
@@ -26,7 +27,7 @@ const AdvancedForm = forwardRef(
     },
     ref,
   ) => {
-    let refForm = null;
+    let refForm = form;
     let refFormOut = null;
     const [visible, triggerVisible] = useState(false);
     const hide = () => triggerVisible(false);
@@ -41,8 +42,8 @@ const AdvancedForm = forwardRef(
      */
     const handleSubmit = async ({ separateTimer = false, ...vals } = {}) => {
       try {
-        const Form = refForm?.form;
-        const Formout = refFormOut?.form;
+        const Form = refForm;
+        const Formout = refFormOut;
         const outVal = Formout?.getFieldsValue();
         const inVal = Form?.getFieldsValue();
 
@@ -84,7 +85,7 @@ const AdvancedForm = forwardRef(
     };
 
     const handleReset = () => {
-      const Form = refForm.form;
+      const Form = refForm;
       if (Form) Form.resetFields();
     };
 
@@ -111,7 +112,7 @@ const AdvancedForm = forwardRef(
 
     useImperativeHandle(ref, () => {
       return {
-        form: refForm?.form,
+        form: refForm,
         formOut: refFormOut?.form,
         handleReset,
         handleResetOut,
@@ -150,8 +151,9 @@ const AdvancedForm = forwardRef(
             <div>
               <FormBox
                 // ref={refForm}
+                form={form}
                 span={formSpan}
-                wrappedComponentRef={form => (refForm = form)}
+                wrappedComponentRef={f => (refForm = form || f?.form)}
                 styleItem={{ marginBottom: '8px' }}
                 // noBottomMargin={true}
                 formItems={formItems}
@@ -172,7 +174,7 @@ const AdvancedForm = forwardRef(
           {/* 弹出搜索框-end */}
           {outFormItems.length ? (
             <FormBox
-              wrappedComponentRef={form => (refFormOut = form)}
+              wrappedComponentRef={f => (refFormOut = f)}
               // outLineHeight={true}
               formItems={outFormItems}
               // FormItemProps={{ wrapperCol: { span: 24 }, labelCol: { span: 0 } }}

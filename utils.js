@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useState, useRef, useEffect, useCallback } from 'react'
 import moment from 'moment';
-import { Tag } from 'antd';
+import { Tag, Form } from 'antd';
 import { useDeepCompareEffect } from 'ahooks';
 import { request } from '@/utils';
 import constants, { SEI_COMMONS_DATA } from '@/utils/constants';
@@ -355,6 +355,42 @@ export function getModel(editType) {
     default:
       return '-'
   }
+}
+
+/**
+ * @description: 受控组件
+ * @param {Object} WrappedComponent
+ * @param {Function} formStateName
+ * @param {Function} formStateFieldsName
+ * @param {Function} setFormStateName
+ * @param {Function} setFormStateFieldsName
+ * @return: Form 受控表单表单
+ */
+export const withFormControl = (WrappedComponent) => {
+  return Form.create({
+    onFieldsChange(props, changedFields) {
+      const { setFormStateFields } = props;
+      if (setFormStateFields) setFormStateFields(state => ({ ...state, ...changedFields }));
+    },
+    mapPropsToFields(props) {
+      const { formState, formStateFields } = props;
+      if (!formState) {
+        return {};
+      }
+      return Object.keys(formState).reduce((pre, d) => {
+        return {
+          ...pre,
+          [d]: Form.createFormField({
+            ...(formStateFields?.[d] || {}),
+            value: formState[d],
+          }),
+        };
+      }, {});
+    },
+    onValuesChange({ setFormState }, values) {
+      if (setFormState) setFormState(state => ({ ...state, ...values }));
+    },
+  })(WrappedComponent)
 }
 
 // 验证是否是数字
