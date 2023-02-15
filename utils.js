@@ -383,7 +383,7 @@ export const withFormControl = WrappedComponent => {
       if (setFormStateFields) setFormStateFields(state => ({ ...state, ...changedFields }));
     },
     mapPropsToFields(props) {
-      const { formState = [], formStateFields = [] } = props;
+      const { formState = {}, formStateFields = {} } = props;
       if (!formState) return {};
       const allKeys = [...new Set(Object.keys(formState).concat(Object.keys(formStateFields)))];
       return allKeys.reduce((pre, d) => {
