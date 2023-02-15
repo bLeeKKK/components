@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useRef, useEffect, useCallback } from 'react'
+import React, { useLayoutEffect, useState, useRef, useEffect, useCallback } from 'react';
 import moment from 'moment';
 import { Tag, Form } from 'antd';
 import { useDeepCompareEffect } from 'ahooks';
@@ -10,18 +10,18 @@ const { SERVER_PATH } = constants;
 /**
  * @description: 所有表单组件【selectUserByOrz】的必选校验
  * SELECTUSERBYORZ_REQUIRED_RULE
-*/
+ */
 export const selectUserByOrzRequiredRule = (message = '请选择变更负责人') => ({
   required: true,
   message,
   validator({ message: msg, required }, value, callback) {
     if (Object.keys(value)?.length || !required) {
-      callback()
+      callback();
     } else {
-      callback(msg)
+      callback(msg);
     }
-  }
-})
+  },
+});
 
 /**
  * @description: 统一时间格式的展示
@@ -29,8 +29,9 @@ export const selectUserByOrzRequiredRule = (message = '请选择变更负责人'
  *
  * @return: 返回处理好的时间格式
  *
-*/
-export const rowShowTime = (date, format = 'YYYY-MM-DD HH:mm:ss') => date ? moment(date).format(format) : '';
+ */
+export const rowShowTime = (date, format = 'YYYY-MM-DD HH:mm:ss') =>
+  date ? moment(date).format(format) : '';
 
 /**
  * @description: 找到配置项中的对应value值
@@ -39,14 +40,14 @@ export const rowShowTime = (date, format = 'YYYY-MM-DD HH:mm:ss') => date ? mome
  *
  * @return: 返回对应对象的 lable
  *
-*/
+ */
 export const optionFindLable = (options, val) => {
   const obj = options.find(re => re.value === val);
-  let show = obj?.label
+  let show = obj?.label;
   if (show && obj?.color) {
-    show = <Tag color={obj.color}>{show}</Tag>
+    show = <Tag color={obj.color}>{show}</Tag>;
   }
-  return show
+  return show;
 };
 
 /**
@@ -66,8 +67,8 @@ export const searchDataPackaged = ({
   dateFormat = 'YYYY-MM-DD',
   fieldDate,
 }) => {
-  if (!obj) return []
-  const newObj = { ...obj }
+  if (!obj) return [];
+  const newObj = { ...obj };
   const keys = Object.keys(newObj);
   const arrFilter = [];
   keys.forEach(item => {
@@ -89,14 +90,14 @@ export const searchDataPackaged = ({
     if (type === 'rangePicker' && rangePickerMode === 'arr' && newObj[item]) {
       if (noTypeData) {
         const arr = [];
-        newObj[item].forEach((i) => {
+        newObj[item].forEach(i => {
           arr.push(moment(i).format(dateFormat));
         });
         newObj[item] = arr;
         fieldType = null;
       } else {
         const arr = [];
-        newObj[item].forEach((i) => {
+        newObj[item].forEach(i => {
           arr.push(moment(i).format(dateFormat));
         });
         newObj[item] = arr;
@@ -150,7 +151,6 @@ export const searchDataPackaged = ({
   return arrFilter.filter(item => !!item.value || item.value === false || item.value === 0);
 };
 
-
 /**
  * @description: 自定义hooks，获取元素的高度
  * @param {dom} ref 接收一个dom元素，实时计算它的高度
@@ -158,14 +158,13 @@ export const searchDataPackaged = ({
  * @return {number} 返回元素高度
  * */
 export const useClientHeight = (ref = {}) => {
-
   const [offsetHeight, setClientHeight] = useState(0);
 
   useLayoutEffect(() => {
     if (ref && ref.offsetHeight) {
       setClientHeight(ref.offsetHeight);
     } else {
-      setClientHeight(0)
+      setClientHeight(0);
     }
   }, [ref, ref.offsetHeight]);
 
@@ -177,52 +176,51 @@ export const useClientHeight = (ref = {}) => {
  * @param {any} value
  *
  * @return {any} 上一个状态
-*/
-export const usePrevious = (value) => {
-  const ref = useRef()
+ */
+export const usePrevious = value => {
+  const ref = useRef();
   useEffect(() => {
-    ref.current = value
-  }, [value])
-  return ref.current
-}
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+};
 
 /**
  * @description: 根据codes，获取字典数据并处理
  * @param {Array} codes 字典code数组
  * @param {Function} setDict 设置字典数据的函数
  * @param {Function} setLoading 设置loading的函数
-*/
+ */
 function reqDict({ codes, setDict, setLoading }) {
-  setLoading(true)
-  Promise
-    .all(codes
-      .map(code => {
-        // 循环对每一个code发出请求
-        return request({
-          url: `${SERVER_PATH}/${SEI_COMMONS_DATA}/dataDict/getCanUseDataDictValues`,
-          method: 'get',
-          headers: { neverCancel: true, },
-          params: { dictCode: code, },
-        })
-          .then(({ success, data }) => {
-            if (success) {
-              return {
-                success,
-                data,
-                code
-              }
-            }
-            return { success }
-          })
-      }))
+  setLoading(true);
+  Promise.all(
+    codes.map(code => {
+      // 循环对每一个code发出请求
+      return request({
+        url: `${SERVER_PATH}/${SEI_COMMONS_DATA}/dataDict/getCanUseDataDictValues`,
+        method: 'get',
+        headers: { neverCancel: true },
+        params: { dictCode: code },
+      }).then(({ success, data }) => {
+        if (success) {
+          return {
+            success,
+            data,
+            code,
+          };
+        }
+        return { success };
+      });
+    }),
+  )
     .then(res => {
       const newDict = res.reduce((pre, { success, data, code }) => {
-        if (success) return { ...pre, [code]: data }
-        return pre
-      }, {})
-      setDict(dict => ({ ...dict, ...newDict }))
+        if (success) return { ...pre, [code]: data };
+        return pre;
+      }, {});
+      setDict(dict => ({ ...dict, ...newDict }));
     })
-    .finally(() => setLoading(false))
+    .finally(() => setLoading(false));
 }
 
 /**
@@ -230,18 +228,18 @@ function reqDict({ codes, setDict, setLoading }) {
  * @param {Array} codes 字典code数组
  *
  * @return {Object} {dict: 字典数据, load: 重新获取字典数据的函数, loading: 是否正在加载}
-*/
+ */
 export const useDict = (codes = []) => {
   const [dict, setDict] = useState({});
   const [loading, setLoading] = useState(false);
   const load = useCallback((cs = codes) => reqDict({ codes: cs, setDict, setLoading }), [codes]);
 
   useDeepCompareEffect(() => {
-    reqDict({ codes, setDict, setLoading })
-  }, [codes])
+    reqDict({ codes, setDict, setLoading });
+  }, [codes]);
 
-  return { dict, load, loading }
-}
+  return { dict, load, loading };
+};
 
 /**
  * @description: 获取字典对应字段
@@ -249,49 +247,55 @@ export const useDict = (codes = []) => {
  * @param {string | number | boolean} val 对应 dataValue
  * @return: 返回对应对象的 lable
  *
-*/
+ */
 export const optionFindLableDict = (options = [], val) => {
   const obj = options.find(re => re.dataValue === val);
-  const show = obj?.dataName || val
-  return show
+  const show = obj?.dataName || val;
+  return show;
 };
 
 /**
  * @description: 统一时间格式
  * @param {Date} date 时间日期
  * @param {string} format 时间格式 默认："YYYY-MM-DD HH:mm:ss"
-*/
-export const timerFormat = (date, format = "YYYY-MM-DD HH:mm:ss") => date ? moment(date).format(format) : null
+ */
+export const timerFormat = (date, format = 'YYYY-MM-DD HH:mm:ss') =>
+  date ? moment(date).format(format) : null;
 
 /**
  * @description: 下载文件使用
-*/
+ */
 export const downloadBlobFile = (data, name) => {
-  const blob = new Blob([data], { type: 'application/vnd.ms-excel,charset=utf-8' })
-  const fileName = name
-  if ('download' in document.createElement('a')) { // 非IE下载
-    const elink = document.createElement('a')
-    elink.download = fileName
-    elink.style.display = 'none'
-    elink.href = URL.createObjectURL(blob)
-    document.body.appendChild(elink)
-    elink.click()
-    URL.revokeObjectURL(elink.href) // 释放URL 对象
-    document.body.removeChild(elink)
-  } else { // IE10+下载
-    navigator.msSaveBlob(blob, fileName)
+  const blob = new Blob([data], { type: 'application/vnd.ms-excel,charset=utf-8' });
+  const fileName = name;
+  if ('download' in document.createElement('a')) {
+    // 非IE下载
+    const elink = document.createElement('a');
+    elink.download = fileName;
+    elink.style.display = 'none';
+    elink.href = URL.createObjectURL(blob);
+    document.body.appendChild(elink);
+    elink.click();
+    URL.revokeObjectURL(elink.href); // 释放URL 对象
+    document.body.removeChild(elink);
+  } else {
+    // IE10+下载
+    navigator.msSaveBlob(blob, fileName);
   }
-}
+};
 
 /**
-  * @description: 返回对相应的数据类型
-  *
-  * @param {*} data
-  *
-  * @return {string} 返回对应的数据类型
-  */
+ * @description: 返回对相应的数据类型
+ *
+ * @param {*} data
+ *
+ * @return {string} 返回对应的数据类型
+ */
 function getType(data) {
-  return Object.prototype.toString.call(data).substring(8).split(/]/)[0]
+  return Object.prototype.toString
+    .call(data)
+    .substring(8)
+    .split(/]/)[0];
 }
 
 /**
@@ -301,27 +305,32 @@ function getType(data) {
  * 比较对象是否相等
  */
 export function comparisonObject(sourceObj, compareObj) {
-  // eslint-disable-next-line no-throw-literal
-  if (arguments.length < 2) throw "Incorrect number of parameters";
+  // eslint-disable-next-line no-throw-literal, @typescript-eslint/no-throw-literal
+  if (arguments.length < 2) throw 'Incorrect number of parameters';
   const sourceType = getType(sourceObj);
   if (sourceType !== getType(compareObj)) return false;
   // Not objects and arrays
-  if (sourceType !== "Array" && sourceType !== "Object" && sourceType !== "Set" && sourceType !== "Map") {
-    if (sourceType === "Number" && sourceObj.toString() === "NaN") {
-      return compareObj.toString() === "NaN"
+  if (
+    sourceType !== 'Array' &&
+    sourceType !== 'Object' &&
+    sourceType !== 'Set' &&
+    sourceType !== 'Map'
+  ) {
+    if (sourceType === 'Number' && sourceObj.toString() === 'NaN') {
+      return compareObj.toString() === 'NaN';
     }
-    if (sourceType === "Date" || sourceType === "RegExp") {
-      return sourceObj.toString() === compareObj.toString()
+    if (sourceType === 'Date' || sourceType === 'RegExp') {
+      return sourceObj.toString() === compareObj.toString();
     }
-    return sourceObj === compareObj
+    return sourceObj === compareObj;
   }
-  if (sourceType === "Array") {
+  if (sourceType === 'Array') {
     if (sourceObj.length !== compareObj.length) return false;
     if (sourceObj.length === 0) return true;
     for (let i = 0; i < sourceObj.length; i += 1) {
       if (!comparisonObject(sourceObj[i], compareObj[i])) return false;
     }
-  } else if (sourceType === "Object") {
+  } else if (sourceType === 'Object') {
     const sourceKeyList = Reflect.ownKeys(sourceObj);
     const compareKeyList = Reflect.ownKeys(compareObj);
     let key;
@@ -331,7 +340,7 @@ export function comparisonObject(sourceObj, compareObj) {
       if (key !== compareKeyList[i]) return false;
       if (!comparisonObject(sourceObj[key], compareObj[key])) return false;
     }
-  } else if (sourceType === "Set" || sourceType === "Map") {
+  } else if (sourceType === 'Set' || sourceType === 'Map') {
     // 把 Set Map 转为 Array
     if (!comparisonObject(Array.from(sourceObj), Array.from(compareObj))) return false;
   }
@@ -343,41 +352,41 @@ export function comparisonObject(sourceObj, compareObj) {
  * @param {number} editType 模式 1:新增 2:编辑 3:查看
  *
  * @return: 返回对应的模式
-*/
+ */
 export function getModel(editType) {
   switch (editType) {
     case 3:
-      return "查看"
+      return '查看';
     case 2:
-      return "编辑"
+      return '编辑';
     case 1:
-      return "新增"
+      return '新增';
     default:
-      return '-'
+      return '-';
   }
 }
 
 /**
  * @description: 受控组件
  * @param {Object} WrappedComponent
- * @param {Function} formStateName
- * @param {Function} formStateFieldsName
- * @param {Function} setFormStateName
- * @param {Function} setFormStateFieldsName
+ *
+ * @param {Function} props.formState
+ * @param {Function} props.setFormState
+ * @param {Function} props.formStateFields
+ * @param {Function} props.setFormStateFields
  * @return: Form 受控表单表单
  */
-export const withFormControl = (WrappedComponent) => {
+export const withFormControl = WrappedComponent => {
   return Form.create({
     onFieldsChange(props, changedFields) {
       const { setFormStateFields } = props;
       if (setFormStateFields) setFormStateFields(state => ({ ...state, ...changedFields }));
     },
     mapPropsToFields(props) {
-      const { formState, formStateFields } = props;
-      if (!formState) {
-        return {};
-      }
-      return Object.keys(formState).reduce((pre, d) => {
+      const { formState = [], formStateFields = [] } = props;
+      if (!formState) return {};
+      const allKeys = [...new Set(Object.keys(formState).concat(Object.keys(formStateFields)))];
+      return allKeys.reduce((pre, d) => {
         return {
           ...pre,
           [d]: Form.createFormField({
@@ -390,25 +399,24 @@ export const withFormControl = (WrappedComponent) => {
     onValuesChange({ setFormState }, values) {
       if (setFormState) setFormState(state => ({ ...state, ...values }));
     },
-  })(WrappedComponent)
-}
+  })(WrappedComponent);
+};
 
 // 验证是否是数字
-export const validateNumber = (value) => !Number.isNaN(parseFloat(value)) && Number.isFinite(value)
-
+export const validateNumber = value => !Number.isNaN(parseFloat(value)) && Number.isFinite(value);
 
 // 常用的一些正则表达式
 /**
  *  @description: 座机号码验证
-*/
-export const REGEXP_LANDLINE = /(?:(\\(\\+?86\\))(0[0-9]{2,3}-?)?([2-9][0-9]{6,7})+(-[0-9]{1,4})?)|(?:(86-?)?(0[0-9]{2,3}-?)?([2-9][0-9]{6,7})+(\\-[0-9]{1,4})?)/
+ */
+export const REGEXP_LANDLINE = /(?:(\\(\\+?86\\))(0[0-9]{2,3}-?)?([2-9][0-9]{6,7})+(-[0-9]{1,4})?)|(?:(86-?)?(0[0-9]{2,3}-?)?([2-9][0-9]{6,7})+(\\-[0-9]{1,4})?)/;
 
 /**
  *  @description: 手机号码验证
-*/
-export const REGEXP_PHONE = /^[1][2,3,4,5,6,7,8,9][0-9]{9}$/
+ */
+export const REGEXP_PHONE = /^[1][2,3,4,5,6,7,8,9][0-9]{9}$/;
 
 /**
  *  @description: 邮箱号验证
-*/
-export const REGEXP_EMAIL = /[a-zA-Z0-9]+([-_.][A-Za-zd]+)*@([a-zA-Z0-9]+[-.])+[A-Za-zd]{2,5}$/
+ */
+export const REGEXP_EMAIL = /[a-zA-Z0-9]+([-_.][A-Za-zd]+)*@([a-zA-Z0-9]+[-.])+[A-Za-zd]{2,5}$/;
