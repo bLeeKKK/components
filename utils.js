@@ -402,6 +402,52 @@ export const withFormControl = WrappedComponent => {
   })(WrappedComponent);
 };
 
+const MODE_ARR = ['day', 'hour', 'minute'];
+const MODE_DIR = {
+  day: { rang: 24, name: 'disabledHours', ex: 'hour' },
+  hour: { rang: 60, name: 'disabledMinutes', ex: 'minute' },
+  minute: { rang: 60, name: 'disabledSeconds', ex: 'second' },
+  // second: { rang: 1000, name: "无", ex: '无', },
+}; // 一天24小时，一小时60分钟，一分钟60秒。字典
+/**
+ * @description: 时间校验
+ * @param {Object} startValue 开始时间
+ * @param {Object} endValue 结束时间
+ * @param {String} mode 那那种时间类型结束
+ * @param {String} type 开始还是结束 start end
+ *
+ * @return: 返回对应的模式
+ */
+export const disabledTime = (startValue, endValue, mode = 'minute', type = 'start') => {
+  if (!startValue || !endValue) return false;
+
+  const obj = {
+    disabledHours: () => [],
+    disabledMinutes: () => [],
+    disabledSeconds: () => [],
+  };
+
+  for (const m of MODE_ARR) {
+    const isSame = startValue.isSame(endValue, m);
+
+    if (isSame) {
+      const dt = endValue[MODE_DIR[m].ex](); // m !== mode ? Math.min(endValue[MODE_DIR[m].ex]() + 1, MODE_DIR[m].rang) : endValue[MODE_DIR[m].ex]()
+      if (type === 'start')
+        obj[MODE_DIR[m].name] = () =>
+          Array.from({ length: MODE_DIR[m].rang }, (_, i) => i).splice(dt, MODE_DIR[m].rang);
+      else
+        obj[MODE_DIR[m].name] = () =>
+          Array.from({ length: MODE_DIR[m].rang }, (_, i) => i).splice(0, dt);
+    } else {
+      break;
+    }
+
+    if (m === mode) break;
+  }
+
+  return obj;
+};
+
 // 验证是否是数字
 export const validateNumber = value => !Number.isNaN(parseFloat(value)) && Number.isFinite(value);
 
