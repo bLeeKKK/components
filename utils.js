@@ -382,6 +382,9 @@ export const withFormControl = WrappedComponent => {
       const { setFormStateFields } = props;
       if (setFormStateFields) setFormStateFields(state => ({ ...state, ...changedFields }));
     },
+    onValuesChange({ setFormState }, values) {
+      if (setFormState) setFormState(state => ({ ...state, ...values }));
+    },
     mapPropsToFields(props) {
       const { formState = {}, formStateFields = {} } = props;
       if (!formState) return {};
@@ -395,9 +398,6 @@ export const withFormControl = WrappedComponent => {
           }),
         };
       }, {});
-    },
-    onValuesChange({ setFormState }, values) {
-      if (setFormState) setFormState(state => ({ ...state, ...values }));
     },
   })(WrappedComponent);
 };
@@ -413,7 +413,7 @@ const MODE_DIR = {
  * @description: 时间校验
  * @param {Object} startValue 开始时间
  * @param {Object} endValue 结束时间
- * @param {String} mode 那那种时间类型结束
+ * @param {String} mode 那那种时间类型结束 day hour minute
  * @param {String} type 开始还是结束 start end
  *
  * @return: 返回对应的模式
@@ -431,13 +431,15 @@ export const disabledTime = (startValue, endValue, mode = 'minute', type = 'star
     const isSame = startValue.isSame(endValue, m);
 
     if (isSame) {
-      const dt = endValue[MODE_DIR[m].ex](); // m !== mode ? Math.min(endValue[MODE_DIR[m].ex]() + 1, MODE_DIR[m].rang) : endValue[MODE_DIR[m].ex]()
-      if (type === 'start')
+      if (type === 'start') {
+        const dt = endValue[MODE_DIR[m].ex](); // m !== mode ? Math.min(endValue[MODE_DIR[m].ex]() + 1, MODE_DIR[m].rang) : endValue[MODE_DIR[m].ex]()
         obj[MODE_DIR[m].name] = () =>
           Array.from({ length: MODE_DIR[m].rang }, (_, i) => i).splice(dt, MODE_DIR[m].rang);
-      else
+      } else {
+        const dt = startValue[MODE_DIR[m].ex](); // m !== mode ? Math.min(startValue[MODE_DIR[m].ex]() + 1, MODE_DIR[m].rang) : startValue[MODE_DIR[m].ex]()
         obj[MODE_DIR[m].name] = () =>
           Array.from({ length: MODE_DIR[m].rang }, (_, i) => i).splice(0, dt);
+      }
     } else {
       break;
     }
@@ -446,6 +448,19 @@ export const disabledTime = (startValue, endValue, mode = 'minute', type = 'star
   }
 
   return obj;
+};
+
+/**
+ * @description: 日期校验
+ * @param {Object} startValue 开始日期
+ * @param {Object} endValue 结束日期
+ * @param {String} type 开始还是结束 start end
+ * @return: 返回对应的模式
+ */
+export const disabledDate = (startValue, endValue, type = 'start') => {
+  if (!startValue || !endValue) return false;
+  if (type === 'start') return startValue.valueOf() > endValue?.valueOf?.();
+  return startValue.valueOf() <= endValue?.valueOf?.();
 };
 
 // 验证是否是数字
