@@ -256,35 +256,37 @@ const FormBox = forwardRef(
 );
 
 const timerFormat = 'YYYY-MM-DD HH:mm:ss';
-export const packageData = ({ vals, types = {}, dateType }) => {
+export const packageData = ({ vals, types = {}, dateType, dateRang = {} }) => {
   const keys = Object.keys(vals);
   const objSend = {};
   keys.forEach(item => {
     const [fieldName, type] = item.split('_');
-    if (types[fieldName] === 'num') {
+    if (typeof types[fieldName] === 'function') {
       // eslint-disable-next-line no-param-reassign
-      vals[item] = Number(vals[item]);
-    } else if (types[fieldName] === 'str') {
-      // eslint-disable-next-line no-param-reassign
-      vals[item] = String(vals[item]);
+      vals[item] = types[fieldName](vals[item]);
     }
+
     if (type === 'datePicker' && vals[item]) {
       // eslint-disable-next-line no-param-reassign
       vals[item] = momentFn(vals[item]).format(dateType?.[fieldName] || timerFormat);
     } else if (type === 'tableRadio' && vals[item]) {
-      // console.log(vals[item])
       // eslint-disable-next-line no-param-reassign
       vals[item] = vals[item] && vals[item][0];
     }
-    if (vals[item] === 0 || vals[item] === false) {
+
+    if (type === 'rangePicker' && vals[item] && vals[item].length) {
+      const [start, end] = vals[item];
+      const [startName, endName] = dateRang[fieldName] || [`${fieldName}Start`, `${fieldName}End`];
       Object.assign(objSend, {
-        [fieldName]: vals[item],
+        [startName]: momentFn(start).format(dateType?.[startName] || timerFormat),
+        [endName]: momentFn(end).format(dateType?.[endName] || timerFormat),
       });
-    } else {
-      Object.assign(objSend, {
-        [fieldName]: vals[item], //  || ''
-      });
+      return;
     }
+
+    Object.assign(objSend, {
+      [fieldName]: vals[item],
+    });
   });
   return objSend;
 };
