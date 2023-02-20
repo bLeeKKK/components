@@ -2,10 +2,14 @@ import React, { useLayoutEffect, useState, useRef, useEffect, useCallback } from
 import moment from 'moment';
 import { Tag, Form } from 'antd';
 import { useDeepCompareEffect } from 'ahooks';
+import { getDvaApp } from 'umi';
 import { request } from '@/utils';
 import constants, { SEI_COMMONS_DATA } from '@/utils/constants';
 
 const { SERVER_PATH } = constants;
+
+// 获取全局的model
+export const getGlobalData = name => getDvaApp()._store.getState()[name];
 
 /**
  * @description: 所有表单组件【selectUserByOrz】的必选校验
