@@ -1,11 +1,14 @@
 import React, { useLayoutEffect, useState, useRef, useEffect, useCallback } from 'react';
+import {stringify} from "qs";
 import moment from 'moment';
+import {utils} from "@sei/suid";
 import { Tag, Form } from 'antd';
 import { useDeepCompareEffect } from 'ahooks';
 import { getDvaApp } from 'umi';
 import { request } from '@/utils';
 import constants, { SEI_COMMONS_DATA } from '@/utils/constants';
 
+const {eventBus} = utils;
 const { SERVER_PATH } = constants;
 
 // 获取全局的model
@@ -465,6 +468,40 @@ export const disabledDate = (startValue, endValue, type = 'start') => {
   if (!startValue || !endValue) return false;
   if (type === 'start') return startValue.valueOf() > endValue?.valueOf?.();
   return startValue.valueOf() <= endValue?.valueOf?.();
+};
+
+/**
+ * 打开页签
+ * @param params
+ * @param title：打开标签页的名称
+ * @param id：打开标签页的id
+ * @param url：打开标签页的路由
+ * @param localUrl：本地测试时打开的路由地址
+ */
+export const handleOpenTab = ({params, title, id, url, localUrl}) => {
+  if (window.top.__portal__?.eventBus) {
+    eventBus.emit('openTab', {
+      id,
+      title,
+      url: `${url}?${stringify(params)}`,
+      activedRefresh: true,
+      closeActiveParentTab: true,
+    });
+  } else {
+    window.open(`${localUrl}?${stringify(params)}`)
+  }
+};
+
+/**
+ * 关闭页签
+ * @param id：要关闭页签的id
+ */
+export const handleCloseTab = (id) => {
+  if (window.top.__portal__?.eventBus) {
+    eventBus.emit('closeTab', [id]);
+  } else {
+    window.close();
+  }
 };
 
 // 验证是否是数字
