@@ -1,0 +1,31 @@
+.type-name {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  color: #a6a6a6;
+  background-color: #f6f6f6;
+}
+
+.timer-head {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 8px 4px 20px;
+  border-radius: 18px;
+  background-color: #eaf1ff;
+  color: rgb(66, 66, 66);
+  font-size: 12px;
+  position: relative;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    height: 6px;
+    width: 6px;
+    background-color: rgb(94, 94, 94);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 8px;
+  }
+}

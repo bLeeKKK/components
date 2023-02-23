@@ -132,7 +132,7 @@ const EditFile = forwardRef(
           if (success) {
             message.success(msg);
           }
-          handleCancel();
+          if (!directlyBind) handleCancel();
         })
         .finally(() => setLoding(false));
       return p
