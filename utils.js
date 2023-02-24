@@ -418,8 +418,8 @@ const MODE_DIR = {
 }; // 一天24小时，一小时60分钟，一分钟60秒。字典
 /**
  * @description: 时间校验
- * @param {Object} startValue 开始时间
- * @param {Object} endValue 结束时间
+ * @param {Moment} startValue 开始时间
+ * @param {Moment} endValue 结束时间
  * @param {String} mode 那那种时间类型结束 day hour minute
  * @param {String} type 开始还是结束 start end
  *
@@ -459,8 +459,8 @@ export const disabledTime = (startValue, endValue, mode = 'minute', type = 'star
 
 /**
  * @description: 日期校验
- * @param {Object} startValue 开始日期
- * @param {Object} endValue 结束日期
+ * @param {Moment} startValue 开始日期
+ * @param {Moment} endValue 结束日期
  * @param {String} type 开始还是结束 start end
  * @return: 返回对应的模式
  */

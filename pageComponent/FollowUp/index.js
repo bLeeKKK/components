@@ -45,7 +45,9 @@ export function CommonLanguage({ form, setStr = 'remark_textarea', lang = langDe
 }
 
 // 展示内容
-export const MyComment = ({ data = {}, iconArr = [] }) => {
+export const MyComment = ({ data = {}, iconArr = [], addContent }) => {
+
+  const moreContent = typeof addContent === 'function' ? addContent(data) : addContent;
   return (
     <div style={{ position: 'relative' }}>
       <Comment
@@ -65,17 +67,18 @@ export const MyComment = ({ data = {}, iconArr = [] }) => {
         }
         content={
           <>
-            <p>{data.remark}</p>
-            {data.nextContactTime ? (
-              <div>
-                <Icon type="clock-circle" />
-                <span style={{ marginLeft: '4px', display: 'inline-block' }}>
-                  下次联系时间：{moment(data.nextContactTime).format('YYYY-MM-DD')}
-                </span>
-              </div>
-            ) : (
-              ''
-            )}
+            <p>{moreContent || data.remark}</p>
+            {data.nextContactTime
+              ? (
+                <div>
+                  <Icon type="clock-circle" />
+                  <span style={{ marginLeft: '4px', display: 'inline-block' }}>
+                    下次联系时间：{moment(data.nextContactTime).format('YYYY-MM-DD')}
+                  </span>
+                </div>
+              )
+              : null
+            }
           </>
         }
       />
@@ -173,8 +176,39 @@ export const addItems = ({ render } = {}) => [
   },
 ];
 // 提交，新增\编辑
-const EditorConter = forwardRef(({ form, data, lang, edit }, ref) => {
+const EditorConter = forwardRef(({ form, data, lang, edit, setFormItems }, ref) => {
   const editFileRef = useRef();
+  const iconArr = [
+    {
+      tooltip: { title: '附件' },
+      type: ICON_PAPER_CLIP,
+      key: 'PRECLUE-DELETE',
+      render: (_, __, icon) => {
+        return <>
+          <EditFile entityId={edit?.id} showCount={false} limtMax={12} ref={editFileRef} windMode directlyBind>
+            {icon}
+          </EditFile>
+        </>;
+      },
+    },
+  ];
+  const items = addItems({
+    render: (_, __, formNow) => (
+      <>
+        <div style={{ lineHeight: '40px', display: 'flex' }}>
+          {data ? null : (
+            <div style={{ marginLeft: '8px' }}>
+              <IconsBox btnIconArr={iconArr} />
+            </div>
+          )}
+          <div style={{ marginLeft: '8px' }}>
+            <CommonLanguage form={formNow} lang={lang} />
+          </div>
+        </div>
+      </>
+    ),
+  })
+  const formItems = typeof setFormItems === "function" ? setFormItems(items) : items;
 
   useImperativeHandle(ref, () => ({
     form,
@@ -184,7 +218,7 @@ const EditorConter = forwardRef(({ form, data, lang, edit }, ref) => {
   useEffect(() => {
     if (data) {
       const obj = packageDataIn({
-        items: addItems(),
+        items: formItems,
         show: data,
       });
       form.setFieldsValue(obj);
@@ -194,42 +228,11 @@ const EditorConter = forwardRef(({ form, data, lang, edit }, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  const iconArr = [
-    {
-      tooltip: { title: '附件' },
-      type: ICON_PAPER_CLIP,
-      key: 'PRECLUE-DELETE',
-      render: (_, __, icon) => {
-        const EditFileDom = (
-          <EditFile entityId={edit?.id} showCount={false} limtMax={12} ref={editFileRef} windMode directlyBind>
-            {icon}
-          </EditFile>
-        );
-        return <>{EditFileDom}</>;
-      },
-    },
-  ];
-
   return (
     <FormBox
       form={form}
       span={6}
-      formItems={addItems({
-        render: (_, __, formNow) => (
-          <>
-            <div style={{ lineHeight: '40px', display: 'flex' }}>
-              {data ? null : (
-                <div style={{ marginLeft: '8px' }}>
-                  <IconsBox btnIconArr={iconArr} />
-                </div>
-              )}
-              <div style={{ marginLeft: '8px' }}>
-                <CommonLanguage form={formNow} lang={lang} />
-              </div>
-            </div>
-          </>
-        ),
-      })}
+      formItems={formItems}
       styleItem={{ marginBottom: '8px' }}
     />
   );
