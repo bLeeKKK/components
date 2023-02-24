@@ -60,10 +60,9 @@ const EditFile = forwardRef(
       setEditFileVisible(false);
       // 清空的话，关闭弹窗列表就请空了，这里不能清空列表
       // setEditFile([])
-    }
+    };
 
     const saveImportExcel = (taskId = entityId, inFiles = editFile) => {
-
       if (limtMin && limtMin > inFiles.length) {
         message.error(`至少存在${limtMin}个附件`);
         return;
@@ -87,16 +86,14 @@ const EditFile = forwardRef(
           [reqParams.documentIds]: inFiles.map(res => res.id),
         });
       }
-      p
-        .then(({ success, message: msg }) => {
-          if (success) {
-            message.success(msg);
-          }
-          if (!directlyBind) handleCancel();
-        })
-        .finally(() => setLoding(false));
-      return p
-    }
+      p.then(({ success, message: msg }) => {
+        if (success) {
+          message.success(msg);
+        }
+        if (!directlyBind) handleCancel();
+      }).finally(() => setLoding(false));
+      return p;
+    };
 
     useImperativeHandle(ref, () => {
       return {
@@ -107,19 +104,23 @@ const EditFile = forwardRef(
     });
 
     useUpdateEffect(() => {
-      if (directlyBind && editFile.some(res => res.status === "uploading") && entityId) {
+      if (directlyBind && editFile.some(res => res.status === 'uploading') && entityId) {
         BIND_FILE.current = true;
       }
 
-      if (BIND_FILE.current && editFile.every(res => res.status === "done")) {
+      if (BIND_FILE.current && editFile.every(res => res.status === 'done')) {
         saveImportExcel();
         BIND_FILE.current = false;
       }
     }, [editFile]);
 
     const attachmentProps = {
-      onDeleteFile: (file) => {
-        if (directlyBind) saveImportExcel(undefined, editFile.filter(res => !file.some(f => f.id === res.id)))
+      onDeleteFile: file => {
+        if (directlyBind)
+          saveImportExcel(
+            undefined,
+            editFile.filter(res => !file.some(f => f.id === res.id)),
+          );
       },
       fileList: editFile,
       showViewType: false,
@@ -128,7 +129,7 @@ const EditFile = forwardRef(
       // viewType: 'card',
       allowUpload,
       onAttachmentRef: r => {
-        attachmentRef.current = r
+        attachmentRef.current = r;
       },
       entityId,
       onChange: (files, errorFileCount) => {
@@ -140,7 +141,6 @@ const EditFile = forwardRef(
       ...props,
     };
 
-
     function getEditFile() {
       return editFile;
     }
@@ -151,52 +151,54 @@ const EditFile = forwardRef(
 
     return (
       <>
-
         {/* 弹窗模式 */}
-        {
-          windMode
-            ? (<>
-              <div onClick={() => setEditFileVisible(true)} style={{ display: 'inline-block' }}>
-                {children}
-              </div>
-              <Modal
-                title="附件"
-                visible={editFileVisible}
-                // onOk={handleOk}
-                onCancel={handleCancel}
-                width="800px"
-                maskClosable={false}
-                forceRender
-                footer={
-                  bindBtn && entityId && allowUpload
-                    ? [
-                      <Button key="save" type="primary" loading={loading} onClick={() => saveImportExcel()}>
+        {windMode ? (
+          <>
+            <div onClick={() => setEditFileVisible(true)} style={{ display: 'inline-block' }}>
+              {children}
+            </div>
+            <Modal
+              title="附件"
+              visible={editFileVisible}
+              // onOk={handleOk}
+              onCancel={handleCancel}
+              width="800px"
+              maskClosable={false}
+              forceRender
+              footer={
+                bindBtn && entityId && allowUpload
+                  ? [
+                      <Button
+                        key="save"
+                        type="primary"
+                        loading={loading}
+                        onClick={() => saveImportExcel()}
+                      >
                         保存
                       </Button>,
                     ]
-                    : []
-                }
-              >
-                {editFileVisible && <Attachment {...attachmentProps} />}
-              </Modal>
-            </>)
-            : <>
-              {/* 非弹窗模式 */}
-              <Attachment {...attachmentProps} />
-              {
-                entityId && bindBtn && allowUpload
-                  ? <>
-                    <Divider />
-                    <div style={{ textAlign: "right" }}>
-                      <Button onClick={() => saveImportExcel()} type="primary" >绑定附件</Button>
-                    </div>
-                  </>
-                  : null
+                  : []
               }
-            </>
-        }
-
-
+            >
+              {editFileVisible && <Attachment {...attachmentProps} />}
+            </Modal>
+          </>
+        ) : (
+          <>
+            {/* 非弹窗模式 */}
+            <Attachment {...attachmentProps} />
+            {entityId && bindBtn && allowUpload ? (
+              <>
+                <Divider />
+                <div style={{ textAlign: 'right' }}>
+                  <Button onClick={() => saveImportExcel()} type="primary">
+                    绑定附件
+                  </Button>
+                </div>
+              </>
+            ) : null}
+          </>
+        )}
       </>
     );
   },

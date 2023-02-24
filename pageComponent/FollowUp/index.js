@@ -46,7 +46,6 @@ export function CommonLanguage({ form, setStr = 'remark_textarea', lang = langDe
 
 // 展示内容
 export const MyComment = ({ data = {}, iconArr = [], addContent }) => {
-
   const moreContent = typeof addContent === 'function' ? addContent(data) : addContent;
   return (
     <div style={{ position: 'relative' }}>
@@ -68,17 +67,14 @@ export const MyComment = ({ data = {}, iconArr = [], addContent }) => {
         content={
           <>
             <p>{moreContent || data.remark}</p>
-            {data.nextContactTime
-              ? (
-                <div>
-                  <Icon type="clock-circle" />
-                  <span style={{ marginLeft: '4px', display: 'inline-block' }}>
-                    下次联系时间：{moment(data.nextContactTime).format('YYYY-MM-DD')}
-                  </span>
-                </div>
-              )
-              : null
-            }
+            {data.nextContactTime ? (
+              <div>
+                <Icon type="clock-circle" />
+                <span style={{ marginLeft: '4px', display: 'inline-block' }}>
+                  下次联系时间：{moment(data.nextContactTime).format('YYYY-MM-DD')}
+                </span>
+              </div>
+            ) : null}
           </>
         }
       />
@@ -89,7 +85,7 @@ export const MyComment = ({ data = {}, iconArr = [], addContent }) => {
   );
 };
 
-export const MyTimeline = ({ item, date, com = () => { } }) => {
+export const MyTimeline = ({ item, date, com = () => {} }) => {
   return (
     <>
       <span className={styles['timer-head']}>{moment(date).format('YYYY-MM-DD')}</span>
@@ -184,11 +180,20 @@ const EditorConter = forwardRef(({ form, data, lang, edit, setFormItems }, ref) 
       type: ICON_PAPER_CLIP,
       key: 'PRECLUE-DELETE',
       render: (_, __, icon) => {
-        return <>
-          <EditFile entityId={edit?.id} showCount={false} limtMax={12} ref={editFileRef} windMode directlyBind>
-            {icon}
-          </EditFile>
-        </>;
+        return (
+          <>
+            <EditFile
+              entityId={edit?.id}
+              showCount={false}
+              limtMax={12}
+              ref={editFileRef}
+              windMode
+              directlyBind
+            >
+              {icon}
+            </EditFile>
+          </>
+        );
       },
     },
   ];
@@ -207,8 +212,8 @@ const EditorConter = forwardRef(({ form, data, lang, edit, setFormItems }, ref) 
         </div>
       </>
     ),
-  })
-  const formItems = typeof setFormItems === "function" ? setFormItems(items) : items;
+  });
+  const formItems = typeof setFormItems === 'function' ? setFormItems(items) : items;
 
   useImperativeHandle(ref, () => ({
     form,
@@ -228,14 +233,7 @@ const EditorConter = forwardRef(({ form, data, lang, edit, setFormItems }, ref) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  return (
-    <FormBox
-      form={form}
-      span={6}
-      formItems={formItems}
-      styleItem={{ marginBottom: '8px' }}
-    />
-  );
+  return <FormBox form={form} span={6} formItems={formItems} styleItem={{ marginBottom: '8px' }} />;
 });
 export const FormEditorConter = Form.create()(EditorConter);
 // ----------------------------编辑跟随表单-----------------------------------end
