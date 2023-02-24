@@ -495,10 +495,13 @@ export const handleOpenTab = ({ params, title, id, url, localUrl }) => {
 /**
  * 关闭页签
  * @param id：要关闭页签的id
+ * * @param refresh：是否需要刷新
  */
-export const handleCloseTab = id => {
+export const handleCloseTab = (id, refresh) => {
   if (window.top.__portal__?.eventBus) {
     eventBus.emit('closeTab', [id]);
+    // 如果需要刷新，则触发一个自定义事件通知刷新
+    if (refresh) eventBus.emit('refreshOrderList', [id]);
   } else {
     window.close();
   }
