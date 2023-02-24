@@ -1,11 +1,14 @@
 import React, { useLayoutEffect, useState, useRef, useEffect, useCallback } from 'react';
+import { stringify } from 'qs';
 import moment from 'moment';
+import { utils } from '@sei/suid';
 import { Tag, Form } from 'antd';
 import { useDeepCompareEffect } from 'ahooks';
 import { getDvaApp } from 'umi';
 import { request } from '@/utils';
 import constants, { SEI_COMMONS_DATA } from '@/utils/constants';
 
+const { eventBus } = utils;
 const { SERVER_PATH } = constants;
 
 // 获取全局的model
@@ -415,8 +418,8 @@ const MODE_DIR = {
 }; // 一天24小时，一小时60分钟，一分钟60秒。字典
 /**
  * @description: 时间校验
- * @param {Object} startValue 开始时间
- * @param {Object} endValue 结束时间
+ * @param {Moment} startValue 开始时间
+ * @param {Moment} endValue 结束时间
  * @param {String} mode 那那种时间类型结束 day hour minute
  * @param {String} type 开始还是结束 start end
  *
@@ -456,8 +459,8 @@ export const disabledTime = (startValue, endValue, mode = 'minute', type = 'star
 
 /**
  * @description: 日期校验
- * @param {Object} startValue 开始日期
- * @param {Object} endValue 结束日期
+ * @param {Moment} startValue 开始日期
+ * @param {Moment} endValue 结束日期
  * @param {String} type 开始还是结束 start end
  * @return: 返回对应的模式
  */
@@ -465,6 +468,43 @@ export const disabledDate = (startValue, endValue, type = 'start') => {
   if (!startValue || !endValue) return false;
   if (type === 'start') return startValue.valueOf() > endValue?.valueOf?.();
   return startValue.valueOf() <= endValue?.valueOf?.();
+};
+
+/**
+ * 打开页签
+ * @param params
+ * @param title：打开标签页的名称
+ * @param id：打开标签页的id
+ * @param url：打开标签页的路由
+ * @param localUrl：本地测试时打开的路由地址
+ */
+export const handleOpenTab = ({ params, title, id, url, localUrl }) => {
+  if (window.top.__portal__?.eventBus) {
+    eventBus.emit('openTab', {
+      id,
+      title,
+      url: `${url}?${stringify(params)}`,
+      activedRefresh: true,
+      closeActiveParentTab: true,
+    });
+  } else {
+    window.open(`${localUrl}?${stringify(params)}`);
+  }
+};
+
+/**
+ * 关闭页签
+ * @param id：要关闭页签的id
+ * * @param refresh：是否需要刷新
+ */
+export const handleCloseTab = (id, refresh) => {
+  if (window.top.__portal__?.eventBus) {
+    eventBus.emit('closeTab', [id]);
+    // 如果需要刷新，则触发一个自定义事件通知刷新
+    if (refresh) eventBus.emit('refreshOrderList', [id]);
+  } else {
+    window.close();
+  }
 };
 
 // 验证是否是数字
