@@ -56,53 +56,13 @@ const EditFile = forwardRef(
     // 是否执行绑定附件常量
     const BIND_FILE = useRef(false);
 
-    useImperativeHandle(ref, () => {
-      return {
-        getEditFile,
-        resetEditFile,
-        saveImportExcel, // 绑定附件
-      };
-    });
-
-    useUpdateEffect(() => {
-      if (directlyBind && editFile.some(res => res.status === "uploading") && entityId) {
-        BIND_FILE.current = true;
-      }
-
-      if (BIND_FILE.current && editFile.every(res => res.status === "done")) {
-        saveImportExcel();
-        BIND_FILE.current = false;
-      }
-    }, [editFile]);
-
-    const attachmentProps = {
-      fileList: editFile,
-      showViewType: false,
-      serviceHost: `${SERVER_PATH}/edm-service`,
-      customBatchDownloadFileName: true,
-      // viewType: 'card',
-      allowUpload,
-      onAttachmentRef: ref => {
-        attachmentRef.current = ref
-      },
-      entityId,
-      onChange: (files, errorFileCount) => {
-        if (errorFileCount === 0) {
-          // console.log(files)
-          setEditFile(files);
-          // if (bindBtnShow && files.every(res => res.status === "done")) saveImportExcel(undefined, files)
-        }
-      },
-      ...props,
-    };
-
     const handleCancel = () => {
       setEditFileVisible(false);
       // 清空的话，关闭弹窗列表就请空了，这里不能清空列表
       // setEditFile([])
     }
 
-    function saveImportExcel(taskId = entityId, inFiles = editFile) {
+    const saveImportExcel = (taskId = entityId, inFiles = editFile) => {
 
       if (limtMin && limtMin > inFiles.length) {
         message.error(`至少存在${limtMin}个附件`);
@@ -137,6 +97,49 @@ const EditFile = forwardRef(
         .finally(() => setLoding(false));
       return p
     }
+
+    useImperativeHandle(ref, () => {
+      return {
+        getEditFile,
+        resetEditFile,
+        saveImportExcel, // 绑定附件
+      };
+    });
+
+    useUpdateEffect(() => {
+      if (directlyBind && editFile.some(res => res.status === "uploading") && entityId) {
+        BIND_FILE.current = true;
+      }
+
+      if (BIND_FILE.current && editFile.every(res => res.status === "done")) {
+        saveImportExcel();
+        BIND_FILE.current = false;
+      }
+    }, [editFile]);
+
+    const attachmentProps = {
+      onDeleteFile: (file) => {
+        if (directlyBind) saveImportExcel(undefined, editFile.filter(res => !file.some(f => f.id === res.id)))
+      },
+      fileList: editFile,
+      showViewType: false,
+      serviceHost: `${SERVER_PATH}/edm-service`,
+      customBatchDownloadFileName: true,
+      // viewType: 'card',
+      allowUpload,
+      onAttachmentRef: r => {
+        attachmentRef.current = r
+      },
+      entityId,
+      onChange: (files, errorFileCount) => {
+        if (errorFileCount === 0) {
+          setEditFile(files);
+          // if (bindBtnShow && files.every(res => res.status === "done")) saveImportExcel(undefined, files)
+        }
+      },
+      ...props,
+    };
+
 
     function getEditFile() {
       return editFile;
