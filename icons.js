@@ -10,3 +10,4 @@ export const ICON_FROZEN = 'pause-circle'; // 冻结<Icon type="line-chart" />
 export const ICON_FROZEN_THAW = 'play-circle'; // 解冻
 export const ICON_PUSH_TO_R3 = 'to-top'; // 推送R3
 export const ICON_CREATE_ORDER = 'book'; // 创建订单
+export const ICON_CUSTOMER_SIGN = 'schedule'; // 签收

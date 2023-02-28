@@ -35,7 +35,6 @@ const FullModal = ({
 }) => {
   const [titleRef, setTitleRef] = useState();
   const offsetHeight = useClientHeight(titleRef);
-
   return (
     <>
       <Modal
