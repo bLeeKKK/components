@@ -62,7 +62,9 @@ const SelectTable = forwardRef(({
   useImperativeHandle(ref, () => {
     return {
       open,
-      onSelectRow
+      onSelectRow,
+      tableRef,
+      selectAdvancedRef,
     };
   });
 
