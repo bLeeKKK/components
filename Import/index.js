@@ -13,17 +13,17 @@ const { Option } = Select;
  * @param {string} pKey 权限控制key
  */
 export default function Import({
-  pKey,
-  downloadTemplate,
-  importData,
-  repeatStr,
-  templateName = 'name',
-  showColumns = [],
-  callback,
-  recordUrl,
-  noType,
-  describeFunc,
-}) {
+                                 pKey,
+                                 downloadTemplate,
+                                 importData,
+                                 repeatStr,
+                                 templateName = 'name',
+                                 showColumns = [],
+                                 callback,
+                                 recordUrl,
+                                 noType,
+                                 describeFunc,
+                               }) {
   const [file, setFile] = useState();
   const [visible, setVisible] = useState(false); // 上传弹窗
   const [visibleShow, setVisibleShow] = useState(false); // 展示弹窗
@@ -218,37 +218,37 @@ export default function Import({
         maskClosable={false}
       >
         {visibleShow &&
-          (showData?.rows.length ? (
-            <>
-              {describe}
-              <Divider dashed />
-              <MyTable
-                columns={columns}
-                showSearch={false}
-                rowKey={(item, index) => `${item.errorMessage}-${index}`}
-                dataSource={showData.rows}
-                height="600px"
-              />
-            </>
-          ) : (
-            <Result
-              status="success"
-              title="数据导入完成！"
-              subTitle={describe}
-              extra={[
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    opOpen();
-                    onCancelShow();
-                  }}
-                >
-                  继续导入
-                </Button>,
-                <Button onClick={onCancelShow}>关闭</Button>,
-              ]}
+        (showData?.rows.length ? (
+          <>
+            {describe}
+            <Divider dashed />
+            <MyTable
+              columns={columns}
+              showSearch={false}
+              rowKey={(item, index) => `${item.errorMessage}-${index}`}
+              dataSource={showData.rows}
+              height="600px"
             />
-          ))}
+          </>
+        ) : (
+          <Result
+            status="success"
+            title="数据导入完成！"
+            subTitle={describe}
+            extra={[
+              <Button
+                type="primary"
+                onClick={() => {
+                  opOpen();
+                  onCancelShow();
+                }}
+              >
+                继续导入
+              </Button>,
+              <Button onClick={onCancelShow}>关闭</Button>,
+            ]}
+          />
+        ))}
       </Modal>
       <Modal
         title="导入记录"

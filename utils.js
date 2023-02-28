@@ -73,9 +73,9 @@ export const searchDataPackaged = ({
   const arrFilter = [];
   keys.forEach(item => {
     const [operator, fieldName, type] = item.split('_');
-    if (type === 'list' && newObj[item]) {
-      delete newObj[item];
-    }
+    // if (type === 'list' && newObj[item]) {
+    //   delete newObj[item];
+    // }
     let fieldType = null;
     if (type === 'datePicker' && newObj[item]) {
       newObj[item] = moment(newObj[item]).format(dateFormat);
@@ -365,6 +365,11 @@ export function getModel(editType) {
       return '-';
   }
 }
+
+export const FREEZE_OPTOONS = [
+  { label: '冻结', value: true, color: 'red' },
+  { label: '启用', value: false, color: 'green' },
+];
 
 /**
  * @description: 受控组件
