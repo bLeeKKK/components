@@ -5,7 +5,7 @@ import constants from '@/utils/constants';
 
 const { StartFlow } = WorkFlow;
 const { SERVER_PATH } = constants;
-const Approve = ({ show, businessKey, businessModelCode, ...props }) => {
+const Approve = ({ show, businessKey, businessModelCode, afterSubmit, ...props }) => {
   const [loading, setLoading] = useControllableValue(props); // [loading, setLoading
 
   return (
@@ -26,6 +26,7 @@ const Approve = ({ show, businessKey, businessModelCode, ...props }) => {
         }}
         onCancel={() => setLoading(false)}
         startComplete={() => {
+          if (afterSubmit) afterSubmit();
           setLoading(false);
         }}
         store={{ baseUrl: SERVER_PATH }}
