@@ -298,7 +298,7 @@ export const downloadBlobFile = (data, name) => {
  *
  * @return {string} 返回对应的数据类型
  */
-function getType(data) {
+export function getType(data) {
   return Object.prototype.toString
     .call(data)
     .substring(8)
