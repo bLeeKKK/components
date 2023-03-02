@@ -1,5 +1,5 @@
 import React from 'react';
-import { message, Tooltip } from 'antd';
+import { message, Tooltip, Icon } from 'antd';
 import copy from 'copy-to-clipboard';
 import { ExtIcon } from '@sei/suid';
 
@@ -12,19 +12,31 @@ function copyText(text) {
 }
 
 function CopyTip({ text, children }) {
+  const [copySucesss, setCopySucesss] = React.useState(false);
+
   return (
     <>
       {text && (
-        <ExtIcon
-          tooltip={{ title: '复制' }}
-          type="copy"
-          antd
-          onClick={e => {
-            copyText(text);
-            e.stopPropagation();
-          }}
-          style={{ color: 'rgb(28,129,230)' }}
-        />
+        <>
+          {copySucesss ? (
+            <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
+          ) : (
+            <ExtIcon
+              tooltip={{ title: '复制' }}
+              type="copy"
+              antd
+              onClick={e => {
+                copyText(text);
+                e.stopPropagation();
+                setCopySucesss(true);
+                setTimeout(() => {
+                  setCopySucesss(false);
+                }, 2000);
+              }}
+              style={{ color: 'rgb(28,129,230)' }}
+            />
+          )}
+        </>
       )}
       &nbsp;
       <Tooltip placement="top" title={text}>
