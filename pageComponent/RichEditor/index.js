@@ -135,7 +135,7 @@ const RichEditor = forwardRef(({ draft = false, columns = [], row = {}, data, ..
                   // The URL that the images are uploaded to.
                   // uploadUrl: `${SERVER_PATH}/${CRM_PRE_SALE}/preTemplatePrint/uploadPic`,
                   // 模拟接口
-                  uploadUrl: `${MOCK_URL}/${CRM_PRE_SALE}/preTemplatePrint/uploadPic`,
+                  uploadUrl: `${SERVER_PATH}/${CRM_PRE_SALE}/preTemplatePrint/uploadPic`,
 
                   // Enable the XMLHttpRequest.withCredentials property.
                   withCredentials: true,
