@@ -3,39 +3,40 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import DecoupledEditor from 'ckeditor5-custom-build';
 import { useEventListener, useControllableValue } from 'ahooks';
 import { Tag } from 'antd';
-import styles from './index.less';
+import {getCurrentUser, getSessionId} from "@/utils/user";
 import { useClientHeight } from '@/components/utils';
+import constants, { CRM_PRE_SALE } from '@/utils/constants';
+import styles from './index.less';
 
+const { SERVER_PATH, MOCK_URL } = constants;
 const RichEditor = forwardRef(({ draft = false, columns = [], row = {}, data, ...props }, ref) => {
   const contacts = useRef(null);
   const toolbarRef = useRef(null);
   // const [editorExample, setEditorExample] = useState(null);
   const [editorExample, setEditorExample] = useControllableValue(props);
-  const transformationsArr = useMemo(() => {
-    const arr = [];
-    columns
-      .forEach(item => {
-        if (draft) {
-          arr.push({
-            from: item.title,
-            to: `[${item.title}]`,
-          });
-        } else {
-          arr.push({
-            from: item.title,
-            to: getTagShowVal(item, row),
-          });
-        }
-      });
-    return arr;
-
-  }, [columns, row, draft])
+  // const transformationsArr = useMemo(() => {
+  //   const arr = [];
+  //   columns.forEach(item => {
+  //     if (draft) {
+  //       arr.push({
+  //         from: item.title,
+  //         to: `[${item.title}]`,
+  //       });
+  //     } else {
+  //       arr.push({
+  //         from: item.title,
+  //         to: getTagShowVal(item, row),
+  //       });
+  //     }
+  //   });
+  //   return arr;
+  // }, [columns, row, draft]);
   const offsetHeight = useClientHeight(contacts?.current || {});
 
   useImperativeHandle(ref, () => ({ editorExample }));
   useEventListener(
     'dragstart',
-    (event) => {
+    event => {
       const target = event.target.nodeType === 1 ? event.target : event.target.parentElement;
       const draggable = target.closest('[draggable]');
 
@@ -52,28 +53,33 @@ const RichEditor = forwardRef(({ draft = false, columns = [], row = {}, data, ..
     <>
       <div className={styles['rich-editor']}>
         <ul className={styles['ul-box']} ref={contacts}>
-          {
-            columns
-              .map(res => {
-                const obj = { ...res, draft, }
-                if (!draft) {
-                  // 如果不是 draft，就需要重新设置 title
-                  obj.title = getTagShowVal(res, row);
-                }
+          {columns.map(res => {
+            const obj = { ...res, draft };
+            if (!draft) {
+              // 如果不是 draft，就需要重新设置 title
+              obj.title = getTagShowVal(res, row);
+            }
 
-                return <li
-                  key={res.dataIndex}
-                  className={styles['li-box']}
-                  draggable
-                  // 判断是不是 draft，如果是 draft，就不需要重新设置 title
-                  data-json={JSON.stringify(obj)}
-                >
-                  <Tag>{res.title}</Tag>
-                </li>
-              })
-          }
+            return (
+              <li
+                key={res.dataIndex}
+                className={styles['li-box']}
+                draggable
+                // 判断是不是 draft，如果是 draft，就不需要重新设置 title
+                data-json={JSON.stringify(obj)}
+              >
+                <Tag><div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"}}>
+                  <section>{res.title}</section>
+                  {draft ? null : <section style={{maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}} title={getTagShowVal(res, row)}>{getTagShowVal(res, row)}</section>}
+                </div></Tag>
+              </li>
+            );
+          })}
         </ul>
-        <div className={styles["ckeditor5-box"]} style={{ height: `calc(100% - ${offsetHeight}px)` }}>
+        <div
+          className={styles['ckeditor5-box']}
+          style={{ height: `calc(100% - ${offsetHeight}px)` }}
+        >
           <div className={styles['show-toolbar']} id="toolbar" ref={toolbarRef} />
           <div className={styles['show-container']}>
             <CKEditor
@@ -83,11 +89,11 @@ const RichEditor = forwardRef(({ draft = false, columns = [], row = {}, data, ..
                 list: {
                   properties: {
                     styles: {
-                      useAttribute: true
+                      useAttribute: true,
                     },
                     startIndex: true,
-                    reversed: true
-                  }
+                    reversed: true,
+                  },
                 },
                 language: 'zh-cn',
                 placeholder: '编辑相关文档！',
@@ -100,15 +106,15 @@ const RichEditor = forwardRef(({ draft = false, columns = [], row = {}, data, ..
                       { from: ':tada:', to: '🎉' },
                       {
                         from: /(^|\s)(")([^"]*)(")$/,
-                        to: [null, '«', null, '»']
+                        to: [null, '«', null, '»'],
                       },
                       {
                         from: /([.?!] )([a-z])$/,
-                        to: matches => [null, matches[1].toUpperCase()]
+                        to: matches => [null, matches[1].toUpperCase()],
                       },
 
                       // Add some more transformations.
-                      ...transformationsArr,
+                      // ...transformationsArr,
                     ],
                   },
                 },
@@ -121,23 +127,25 @@ const RichEditor = forwardRef(({ draft = false, columns = [], row = {}, data, ..
                     'toggleImageCaption',
                     'imageTextAlternative',
                     '|',
-                    'linkImage'
-                  ]
+                    'linkImage',
+                  ],
                 },
                 // 图片上传配置
                 simpleUpload: {
                   // The URL that the images are uploaded to.
-                  uploadUrl: 'http://example.com',
+                  // uploadUrl: `${SERVER_PATH}/${CRM_PRE_SALE}/preTemplatePrint/uploadPic`,
+                  // 模拟接口
+                  uploadUrl: `${MOCK_URL}/${CRM_PRE_SALE}/preTemplatePrint/uploadPic`,
 
                   // Enable the XMLHttpRequest.withCredentials property.
                   withCredentials: true,
 
                   // Headers sent along with the XMLHttpRequest to the upload server.
                   headers: {
-                    'X-CSRF-TOKEN': 'CSRF-Token',
-                    Authorization: 'Bearer <JSON Web Token>'
-                  }
-                }
+                    'x-sid': getSessionId(),
+                    Authorization: getCurrentUser().accessToken || '',
+                  },
+                },
               }}
               data={data}
               onReady={editor => {
@@ -156,7 +164,7 @@ const RichEditor = forwardRef(({ draft = false, columns = [], row = {}, data, ..
       </div>
     </>
   );
-})
+});
 
 export function getTagShowVal(item, row) {
   const val = row[item?.dataIndex];
@@ -165,5 +173,3 @@ export function getTagShowVal(item, row) {
 }
 
 export default RichEditor;
-
-
