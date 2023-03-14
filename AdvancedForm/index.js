@@ -24,6 +24,7 @@ const AdvancedForm = forwardRef(
       outBtnStayle = {},
       separate = true, // 外部和内部 分离查询
       verification = false, // 是否验证
+      onResetCallback,
     },
     ref,
   ) => {
@@ -46,6 +47,7 @@ const AdvancedForm = forwardRef(
         const Form = refForm;
         const Formout = refFormOut;
         const outVal = Formout?.getFieldsValue();
+        console.log('outVal', outVal);
         const inVal = Form?.getFieldsValue();
 
         await new Promise((resolve, reject) => {
@@ -88,6 +90,7 @@ const AdvancedForm = forwardRef(
     const handleReset = () => {
       const Form = refForm;
       if (Form) Form.resetFields();
+      if (onResetCallback) onResetCallback(Form);
     };
 
     const handleResetOut = () => {
