@@ -75,6 +75,9 @@ const RichEditor = forwardRef(({ draft = false, columns = [], row = {}, data, ..
               </li>
             );
           })}
+          <li className={styles['li-box']} draggable style={{color: '#1890ff'}} data-json={JSON.stringify({ title: '[明细]', dataIndex: 'name'})}>
+            <Tag color='blue'>明细</Tag>
+          </li>
         </ul>
         <div
           className={styles['ckeditor5-box']}
