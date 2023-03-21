@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Button, Drawer, Badge } from 'antd';
 import { ExtIcon } from '@sei/suid';
 import classnames from 'classnames';
@@ -28,8 +28,9 @@ const AdvancedForm = forwardRef(
     },
     ref,
   ) => {
+    const refOut = useRef();
+    // const refFormOut = refOut.current;
     let refForm = form;
-    let refFormOut = null;
 
     const [visible, triggerVisible] = useState(false);
     const hide = () => triggerVisible(false);
@@ -45,9 +46,8 @@ const AdvancedForm = forwardRef(
     const handleSubmit = async ({ separateTimer = false, ...vals } = {}) => {
       try {
         const Form = refForm;
-        const Formout = refFormOut;
+        const Formout = refOut.current;
         const outVal = Formout?.getFieldsValue();
-        console.log('outVal', outVal);
         const inVal = Form?.getFieldsValue();
 
         await new Promise((resolve, reject) => {
@@ -74,7 +74,6 @@ const AdvancedForm = forwardRef(
             resolve();
           }
         });
-
         if (outVal?.value_search) outVal.value_search = outVal.value_search.trim();
         if (separateTimer || separate) {
           onOk(visible ? inVal : {}, visible ? {} : outVal, { ...vals });
@@ -94,7 +93,7 @@ const AdvancedForm = forwardRef(
     };
 
     const handleResetOut = () => {
-      const Form = refFormOut;
+      const Form = refOut.current;
       if (Form) Form.resetFields();
     };
 
@@ -117,7 +116,7 @@ const AdvancedForm = forwardRef(
     useImperativeHandle(ref, () => {
       return {
         form: refForm,
-        formOut: refFormOut,
+        formOut: refOut.current,
         handleReset,
         handleResetOut,
         handleSubmit,
@@ -178,7 +177,7 @@ const AdvancedForm = forwardRef(
           {/* 弹出搜索框-end */}
           {outFormItems.length ? (
             <FormBox
-              wrappedComponentRef={f => (refFormOut = f?.form)}
+              wrappedComponentRef={f => (refOut.current = f?.form)}
               // outLineHeight={true}
               formItems={outFormItems}
               // FormItemProps={{ wrapperCol: { span: 24 }, labelCol: { span: 0 } }}

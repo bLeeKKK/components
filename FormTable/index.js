@@ -52,7 +52,7 @@ function renderInput({ iteminput, form, rowkey, record, intorow = false, dataInd
   // 默认为表单带上 record
   if (intorow) getFieldDecorator(`${name}.record`, { initialValue: record })(<Input />);
 
-  const val = record[dataIndex];
+  const val = record[iteminput.key];
   const initVal =
     typeof iteminput.props?.initialValue === 'function'
       ? iteminput.props?.initialValue(val, record)
