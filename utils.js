@@ -166,6 +166,7 @@ export const searchDataPackaged = ({
  * */
 export const useClientHeight = (ref = {}) => {
   const [offsetHeight, setClientHeight] = useState(0);
+  const h = ref?.offsetHeight
 
   useLayoutEffect(() => {
     if (ref && ref.offsetHeight) {
@@ -173,7 +174,7 @@ export const useClientHeight = (ref = {}) => {
     } else {
       setClientHeight(0);
     }
-  }, [ref, ref.offsetHeight]);
+  }, [ref, h]);
 
   return offsetHeight;
 };
