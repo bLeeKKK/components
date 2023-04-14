@@ -142,7 +142,7 @@ const AdvancedForm = forwardRef(
 
     return (
       <>
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', ...outBtnStayle }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: '100%', ...outBtnStayle }}>
           {/* 弹出搜索框-star */}
           <Drawer
             title="高级查询"
