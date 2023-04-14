@@ -13,13 +13,13 @@ function EditableCell(props) {
 
     return form && iteminput && edit && !justShow
       ? renderInput({
-          iteminput,
-          form,
-          rowkey,
-          record,
-          intorow,
-          dataIndex,
-        })
+        iteminput,
+        form,
+        rowkey,
+        record,
+        intorow,
+        dataIndex,
+      })
       : children;
   };
 
@@ -41,9 +41,9 @@ function renderInput({ iteminput, form, rowkey, record, intorow = false, dataInd
   const { getFieldDecorator } = form;
   let input = null;
   let rules = iteminput.rules || [];
-  let newOnchange = () => {};
+  let newOnchange = () => { };
   if (iteminput?.props?.onChange) {
-    newOnchange = function(...props) {
+    newOnchange = function (...props) {
       iteminput.props.onChange.call(this, ...props, record, form);
     };
   }
@@ -56,7 +56,7 @@ function renderInput({ iteminput, form, rowkey, record, intorow = false, dataInd
   const initVal =
     typeof iteminput.props?.initialValue === 'function'
       ? iteminput.props?.initialValue(val, record)
-      : val || iteminput.props?.initialValue;
+      : (val ?? iteminput.props?.initialValue);
   if (iteminput.type) {
     input = getFieldDecorator(`${name}.${iteminput.key}_${iteminput.type}`, {
       rules,

@@ -13,3 +13,5 @@ export const ICON_CREATE_ORDER = 'book'; // 创建订单
 export const ICON_CUSTOMER_SIGN = 'schedule'; // 签收
 export const ICON_LOOK_FILE = 'file'; // 凭证
 export const ICON_DOWNLOAD = 'download'; // 凭证<Icon type="download" />
+export const ICON_WRITE_OFF = 'check-circle'; // 冲销
+export const ICON_CHECK_DELIVERY = 'file-done'; // 查看交货单
