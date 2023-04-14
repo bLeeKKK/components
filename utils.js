@@ -512,6 +512,17 @@ export const handleCloseTab = (id, refresh) => {
   }
 };
 
+/**
+ * 获取采购订单号的接口查询参数格式
+ * @param value: 采购订单号
+ * @returns {{low, selname: string, option: string}}
+ */
+export const getPurchaseOrderNumParams = (value) => ({
+  low: value,
+  option: 'EQ',
+  selname: 'EBELN',
+});
+
 // 验证是否是数字
 export const validateNumber = value => !Number.isNaN(parseFloat(value)) && Number.isFinite(value);
 
